@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Requester v2000 ALPHA</title>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="main.js"></script>
+
+</head>
+<body>
+    <div>
+        <input type="text" id="input-url" placeholder="url">
+        <select name="input-method" id="input-method">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+        </select>
+        <input type="text" id="input-msg" placeholder="message">
+        <button id="input-go">fazer request</button>
+    </div>
+    <div>
+        <pre id="output-response">
+
+        </pre>
+    </div>
+</body>
+</html>
