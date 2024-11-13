@@ -1,3 +1,4 @@
+import functions.functionManager as fn
 from flask import Flask, request
 # from flask_cors import CORS
 import json
@@ -6,15 +7,41 @@ app = Flask(__name__)
 # CORS(app)
 
 
+def getDefaultHeaders():
+    return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+    }   
+
+
 @app.route('/ping', methods=['GET'])
 def ping():
 
-    headers = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-    }
+    headers = getDefaultHeaders()
+    result, response = fn.ping()
 
-    return { 'response': 'pong' }, 200, headers 
+    if(result):
+        return { 'response': response }, 200, headers 
+    else:
+        return { 'response': response }, 500, headers 
+
+
+@app.route('/event', methods=['GET'])
+def event():
+
+    headers = getDefaultHeaders()
+
+    id = request.args.get('id')
+
+    if(id == None):
+        return { 'response': 'ERRO: Parametros mal configurados' }, 400, headers 
+
+    result, response = fn.evento(id)
+
+    if(result):
+        return { 'response': response }, 200, headers 
+    else:
+        return { 'response': response }, 500, headers 
 
 
 @app.route('/testfile', methods=['GET'])
