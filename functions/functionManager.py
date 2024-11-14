@@ -6,5 +6,5 @@ def ping():
     return fping.ping()
 
 
-def evento(id):
-    return fevento.evento(id)
+def evento(dbconf, id):
+    return fevento.evento(dbconf, id)

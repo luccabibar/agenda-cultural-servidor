@@ -1,3 +1,5 @@
+from configs import Database
+
 import functions.functionManager as fn
 from flask import Flask, request
 # from flask_cors import CORS
@@ -10,7 +12,8 @@ app = Flask(__name__)
 def getDefaultHeaders():
     return {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*'
     }   
 
 
@@ -18,93 +21,42 @@ def getDefaultHeaders():
 def ping():
 
     headers = getDefaultHeaders()
+
     result, response = fn.ping()
 
-    if(result):
+    if(result == 200):
         return { 'response': response }, 200, headers 
     else:
         return { 'response': response }, 500, headers 
 
 
-@app.route('/event', methods=['GET'])
-def event():
-
+@app.route('/evento', methods=['GET', 'OPTIONS'])
+def evento():
+    
     headers = getDefaultHeaders()
 
-    id = request.args.get('id')
+    # preflight
+    if request.method == 'OPTIONS':
+        return {}, 204, headers
+    
+    try:
+        id = int(request.args.get('id'))
 
-    if(id == None):
+        if(id is None):
+            raise
+
+    except:
         return { 'response': 'ERRO: Parametros mal configurados' }, 400, headers 
 
-    result, response = fn.evento(id)
 
-    if(result):
-        return { 'response': response }, 200, headers 
+    status, response = fn.evento(Database, id)
+
+    if(status == 200):
+        return { 'response': response }, 200, headers
+    if(status == 404):
+        return { 'response': response }, 404, headers 
     else:
         return { 'response': response }, 500, headers 
-
-
-@app.route('/testfile', methods=['GET'])
-def read():
-    
-
-    # if request.method == 'OPTIONS':
-    #     print('pref')
-    #     return 204, headers
-
-    # dados = json.loads(request.data)
-
-    # print(prbl)
-
-    msg = ""
-
-    try:
-        f = open("data/testfile.txt", "r")
-        msg = f.read()
-
-        f.close()
-
-    except IOError as ex:
-        msg = "ERRO: Nada para ler ainda!"
-
-    headers = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-    }
-
-    print(msg)
-
-    return { 'response': msg }, 200, headers
-
-
-@app.route('/testfile', methods=['POST'])
-def write():
-    
-    # if request.method == 'OPTIONS':
-    #     print('pref')
-    #     return 204, headers
-
-    msg = request.form.get('msg')
-
-    resp = ""
-
-    try:
-        f = open("data/testfile.txt", "w")
-        f.write(msg)
-
-        f.close()
-
-        resp = "Escrita com sucesso!"
-
-    except IOError as ex:
-        resp = "ERRO: Impossivel escrever!"
-
-    headers = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-    }
-
-    return resp, 200, headers
 
 
 if __name__ == "__main__":

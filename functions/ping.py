@@ -1,3 +1,3 @@
 
 def ping():
-    return True, 'pong'
+    return 200, 'pong'
