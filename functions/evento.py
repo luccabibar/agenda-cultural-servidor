@@ -16,17 +16,24 @@ def evento(dbconf, id):
         return 500, "impossivel conectar com o banco"
 
     # monta request
-    colnames = ['nome', 'descricao', 'categoria', 'horarioInicio', 'horarioFim', 'regiao', 'endereco', 'enderecoLink']
+    colnames = ['nome', 'descricao', 'categoria', 'horarioInicio', 'horarioFim', 'regiao', 'endereco', 'enderecoLink', 'organizador']
 
     query = '''
         SELECT
-            nome, descricao, categoria,
-            hora_ini, hora_fim,
-            regiao, endereco, endereco_link
-        FROM evento
+            ev.nome, ev.descricao, ev.categoria,
+            ev.hora_ini, ev.hora_fim,
+            ev.regiao, ev.endereco, ev.endereco_link,
+            us.nome
+        FROM evento AS ev
+        JOIN organizador AS og
+        ON
+            ev.organizador = og.id
+        JOIN usuario AS us
+        ON
+             og.id = us.id
         WHERE
-            id = %s
-            AND status = 'Aprovado'
+            ev.id = %s
+            AND ev.status = 'Aprovado'
         LIMIT 1;
     '''
 
@@ -37,11 +44,10 @@ def evento(dbconf, id):
     # executa
     result = dbm.select(conn, query, params, colnames)
 
-    print(result)
-    print(type(result))
-
     if(result is None or len(result) == 0):
         return 404, "Nenhum evento encontrado"
+    
+    # pos processamento
+    result[0]['organizador'] = { 'nome': result[0]['organizador'] } 
 
-    else:
-        return 200, result[0]
+    return 200, result[0]
