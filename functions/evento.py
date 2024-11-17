@@ -72,10 +72,3 @@ def evento(dbconf, id):
         del result[0]['attTexto']
 
     return 200, result[0]
-
-
-def getEvento():
-    pass
-
-def getAtualizacoes():
-    pass
