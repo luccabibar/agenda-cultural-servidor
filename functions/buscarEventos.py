@@ -45,14 +45,14 @@ def buscarEventos(dbconf, texto, categoria, diaUpper, diaLower, horaUpper, horaL
 
     # monta request
     colnames = [
-        'nome', 'descricao', 'categoria',
+        'id', 'nome', 'descricao', 'categoria',
         'horarioInicio', 'regiao',
         'organizador'   
     ]
 
     query = '''
         SELECT
-            ev.nome, ev.descricao, ev.categoria,
+            ev.id, ev.nome, ev.descricao, ev.categoria,
             ev.hora_ini, ev.regiao,
             us.nome
         FROM evento AS ev

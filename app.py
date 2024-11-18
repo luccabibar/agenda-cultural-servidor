@@ -99,5 +99,17 @@ def buscarEventos():
         return { 'response': response }, 500, headers
     
 
+@app.route('/getBuscarParams', methods=['GET'])
+def getBuscarParams():
+
+    headers = getDefaultHeaders()
+
+    result, response = fn.getBuscarParams(Database)
+
+    if(result == 200):
+        return { 'response': response }, 200, headers 
+    else:
+        return { 'response': response }, 500, headers 
+
 if __name__ == "__main__":
     app.run(debug=True)
