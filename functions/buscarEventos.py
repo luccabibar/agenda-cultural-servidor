@@ -9,11 +9,11 @@ def buildWhereClause(texto, categoria, diaUpper, diaLower, horaUpper, horaLower,
     condicoes = [pp for pp in [
         (texto, "UPPER(ev.nome) LIKE CONCAT('%%', UPPER(%s), '%%')"), 
         (categoria, "UPPER(ev.categoria) = UPPER(%s)"), 
-        (diaUpper, "CAST('ev.hora_ini' AS DATE) < CAST(%s AS DATE)"), 
-        (diaLower, "CAST('ev.hora_ini' AS DATE) > CAST(%s AS DATE)"), 
-        (horaUpper, "CAST('ev.hora_ini' AS TIME) < CAST(%s AS TIME)"), 
-        (horaLower, "CAST('ev.hora_ini' AS TIME) > CAST(%s AS TIME)"), 
-        (regiao, "UPPER(ev.categoria) = UPPER(%s)")
+        (diaUpper, "CAST(ev.hora_ini AS DATE) < CAST(%s AS DATE)"), 
+        (diaLower, "CAST(ev.hora_ini AS DATE) > CAST(%s AS DATE)"), 
+        (horaUpper, "CAST(ev.hora_ini AS TIME) < CAST(%s AS TIME)"), 
+        (horaLower, "CAST(ev.hora_ini AS TIME) > CAST(%s AS TIME)"), 
+        (regiao, "UPPER(ev.regiao) = UPPER(%s)")
     ] if pp[0] is not None]
 
     for cc in condicoes:
