@@ -7,10 +7,8 @@ from . import getBuscarParams as fbuscarparams
 def ping():
     return fping.ping()
 
-
 def evento(dbconf, id):
     return fevento.evento(dbconf, id)
-
 
 def buscarEventos(dbconf, texto, categoria, diaUpper, diaLower, horaUpper, horaLower, regiao):
     return fbuscarev.buscarEventos(dbconf, texto, categoria, diaUpper, diaLower, horaUpper, horaLower, regiao)

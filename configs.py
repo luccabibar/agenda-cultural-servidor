@@ -1,8 +1,15 @@
+from keys import keys_local as kl
+from keys import keys_prod as kp
 
-Database = {
-    'Host': '127.0.0.1',
-    'Port': '5432',
-    'Name': 'agenda-cultural',
-    'User': 'agenda-cultural-user',
-    'Password': 'agenda-cultural',
+keys = {
+    "LOCAL": kl,
+    "PROD": kp
 }
+
+
+# SELECAO DE AMBIENTE:
+# CONST_ENV = "PROD"
+CONST_ENV = "LOCAL"
+
+
+Database = keys[CONST_ENV]
