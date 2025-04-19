@@ -51,10 +51,13 @@ def evento():
         id = request.args.get('id', type = int)
 
         if(id is None):
-            raise
+            raise ParameterException("campo 'id' não definido")
 
-    except:
-        return { 'response': 'ERRO: Parametros mal configurados' }, 400, headers 
+    except ParameterException as ex:
+        return { 'response': 'ERRO: ' + repr(ex) }, 400, headers 
+
+    except Exception as ex:
+        return { 'response': 'ERRO: Parametros mal configurados - ' + repr(ex) }, 400, headers 
 
 
     # executa funcao
@@ -88,11 +91,15 @@ def buscarEventos():
         horaLower = request.args.get('horaLower', type = str)
         regiao = request.args.get('regiao', type = str)
 
-        if(id is None):
-            raise
+        # TODO: investigar id
+        # if(id is None):
+        #     raise ParameterException("campo 'id' não definido")
 
-    except:
-        return { 'response': 'ERRO: Parametros mal configurados' }, 400, headers 
+    except ParameterException as ex:
+        return { 'response': 'ERRO: ' + repr(ex) }, 400, headers 
+
+    except Exception as ex:
+        return { 'response': 'ERRO: Parametros mal configurados - ' + repr(ex) }, 400, headers 
 
     # executa funcao
     status, response = fn.buscarEventos(Database, texto, categoria, diaUpper, diaLower, horaUpper, horaLower, regiao)
@@ -134,7 +141,6 @@ def criarUsuario():
     # valida parametros
     try:            
         rdata = request.get_json()
-        print("cara pq")
 
         # TODO: aplicar esta estrutura no resto do arqiuvo
         email = str(rdata['email'])
@@ -154,7 +160,6 @@ def criarUsuario():
             raise ParameterException("campo 'tipo' não definido")
     
         cpf = str(rdata['cpf'])
-
 
     except ParameterException as ex:
         return { 'response': 'ERRO: ' + repr(ex) }, 400, headers 
