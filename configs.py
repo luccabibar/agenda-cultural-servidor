@@ -1,5 +1,5 @@
-from keys import keys_local as kl
-from keys import keys_prod as kp
+from keys.keys_local import Database as kl
+from keys.keys_prod import Database as kp
 
 keys = {
     "LOCAL": kl,
