@@ -115,7 +115,7 @@ def getBuscarParams():
 
     headers = getDefaultHeaders()
 
-    result, response = fn.getBuscarParams(Database)
+    status, response = fn.getBuscarParams(Database)
 
     if status == None:
         status = 500
