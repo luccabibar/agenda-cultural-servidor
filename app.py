@@ -17,6 +17,9 @@ def getDefaultHeaders():
         'Access-Control-Allow-Headers': '*'
     }   
 
+# = = = = = = = = = = = = = =
+# Ping
+# = = = = = = = = = = = = = =
 
 @app.route('/ping', methods=['GET'])
 def ping():
@@ -30,6 +33,9 @@ def ping():
     else:
         return { 'response': response }, 500, headers 
 
+# = = = = = = = = = = = = = =
+# Evento
+# = = = = = = = = = = = = = =
 
 @app.route('/evento', methods=['GET', 'OPTIONS'])
 def evento():
@@ -111,6 +117,66 @@ def getBuscarParams():
         return { 'response': response }, 200, headers 
     else:
         return { 'response': response }, 500, headers 
+
+# = = = = = = = = = = = = = =
+# Usuario
+# = = = = = = = = = = = = = =
+
+@app.route('/usuario', methods=['POST', 'OPTIONS'])
+def criarUsuario():
+    
+    headers = getDefaultHeaders()
+
+    # preflight
+    if request.method == 'OPTIONS':
+        return {}, 204, headers
+
+    # valida parametros
+    try:            
+        rdata = request.get_json()
+        print("cara pq")
+
+        # TODO: aplicar esta estrutura no resto do arqiuvo
+        email = str(rdata['email'])
+        if email is None:
+            raise ParameterException("campo 'email' não definido")
+    
+        nome = str(rdata['nome'])
+        if nome is None:
+            raise ParameterException("campo 'nome' não definido")
+    
+        senha = str(rdata['senha'])
+        if senha is None:
+            raise ParameterException("campo 'senha' não definido")
+    
+        tipo = str(rdata['tipo'])
+        if tipo is None:
+            raise ParameterException("campo 'tipo' não definido")
+    
+        cpf = str(rdata['cpf'])
+
+
+    except ParameterException as ex:
+        return { 'response': 'ERRO: ' + repr(ex) }, 400, headers 
+
+    except Exception as ex:
+        return { 'response': 'ERRO: Parametros mal configurados - ' + repr(ex) }, 400, headers 
+
+    # executa funcao
+    status, response = fn.criaUsuario(Database, email, nome, senha, tipo, cpf)
+
+    # TODO: repensar isso aq???
+    # responde
+    if(status == 200):
+        return { 'response': response }, 200, headers
+    elif(status == 401):
+        return { 'response': response }, 401, headers 
+    elif(status == 404):
+        return { 'response': response }, 404, headers 
+    else:
+        return { 'response': response }, 500, headers
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
