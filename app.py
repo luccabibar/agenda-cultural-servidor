@@ -26,12 +26,13 @@ def ping():
 
     headers = getDefaultHeaders()
 
-    result, response = fn.ping()
+    status, response = fn.ping()
 
-    if(result == 200):
-        return { 'response': response }, 200, headers 
-    else:
-        return { 'response': response }, 500, headers 
+    if status == None:
+        status = 500
+
+    return { 'response': response }, status, headers
+
 
 # = = = = = = = = = = = = = =
 # Evento
@@ -64,12 +65,10 @@ def evento():
     status, response = fn.evento(Database, id)
 
     # responde
-    if(status == 200):
-        return { 'response': response }, 200, headers
-    elif(status == 404):
-        return { 'response': response }, 404, headers 
-    else:
-        return { 'response': response }, 500, headers 
+    if status == None:
+        status = 500
+
+    return { 'response': response }, status, headers
 
 
 @app.route('/buscarEventos', methods=['GET', 'OPTIONS'])
@@ -105,12 +104,10 @@ def buscarEventos():
     status, response = fn.buscarEventos(Database, texto, categoria, diaUpper, diaLower, horaUpper, horaLower, regiao)
 
     # responde
-    if(status == 200):
-        return { 'response': response }, 200, headers
-    elif(status == 404):
-        return { 'response': response }, 404, headers 
-    else:
-        return { 'response': response }, 500, headers
+    if status == None:
+        status = 500
+
+    return { 'response': response }, status, headers
     
 
 @app.route('/getBuscarParams', methods=['GET'])
@@ -120,10 +117,10 @@ def getBuscarParams():
 
     result, response = fn.getBuscarParams(Database)
 
-    if(result == 200):
-        return { 'response': response }, 200, headers 
-    else:
-        return { 'response': response }, 500, headers 
+    if status == None:
+        status = 500
+
+    return { 'response': response }, status, headers
 
 # = = = = = = = = = = = = = =
 # Usuario
@@ -142,7 +139,6 @@ def criarUsuario():
     try:            
         rdata = request.get_json()
 
-        # TODO: aplicar esta estrutura no resto do arqiuvo
         email = str(rdata['email'])
         if email is None:
             raise ParameterException("campo 'email' não definido")
@@ -170,16 +166,11 @@ def criarUsuario():
     # executa funcao
     status, response = fn.criaUsuario(Database, email, nome, senha, tipo, cpf)
 
-    # TODO: repensar isso aq???
     # responde
-    if(status == 200):
-        return { 'response': response }, 200, headers
-    elif(status == 401):
-        return { 'response': response }, 401, headers 
-    elif(status == 404):
-        return { 'response': response }, 404, headers 
-    else:
-        return { 'response': response }, 500, headers
+    if status == None:
+        status = 500
+
+    return { 'response': response }, status, headers
 
 
 
