@@ -1,24 +1,35 @@
 from .common import databaseManager as dbm
+from datetime import datetime as dt
 
+def jaExiste(conn, email, nome, cpf):
 
-def jaExiste(conn, email, nome):
+    if(cpf == None):
+        cpf = ''
 
     # monta request
     colnames = [
-        'email', 'nome', 
+        'email', 'nome', 'cpf_org', 'cpf_mod'
     ]
 
     query = '''
         SELECT
-            us.email, us.nome 
+            us.email, 
+            us.nome, 
+            og.cpf_cnpj, 
+            md.cpf_cnpj 
         FROM usuario AS us
+        FULL OUTER JOIN organizador AS og
+            ON us.id = og.id
+        FULL OUTER JOIN moderador AS md
+            ON us.id = md.id
         WHERE
             UPPER(us.email) = UPPER(%s)
             OR UPPER(us.nome) = UPPER(%s)
-        ;
+            OR og.cpf_cnpj = %s
+            OR md.cpf_cnpj = %s
     '''
 
-    params = (email, nome)
+    params = (email, nome, cpf, cpf)
 
     # executa
     result = dbm.select(conn, query, params, colnames)
@@ -34,6 +45,9 @@ def jaExiste(conn, email, nome):
                 break
             elif(nome.upper() == rr['nome'].upper()):
                 res = "Um usuário com este nome já está cadastrado"
+                break
+            elif(cpf == rr['cpf_org'] or cpf == rr['cpf_mod']):
+                res = "Um usuário com este cpf já está cadastrado"
                 break
 
         return True, res
@@ -57,7 +71,7 @@ def criaUsuario(dbconf, email, nome, senha, tipo, cpf = None):
         return 500, "impossivel conectar com o banco"
 
     # verifica se usuario ja existe
-    jaEx, res = jaExiste(conn, email, nome)
+    jaEx, res = jaExiste(conn, email, nome, cpf)
 
     if(jaEx):
         return 401, res
@@ -71,9 +85,6 @@ def criaUsuario(dbconf, email, nome, senha, tipo, cpf = None):
 
     # senha deve ser texto + data
 
-
-    
-    
     # pos processamento
     result[0]['atualizacoes'] = []
     
