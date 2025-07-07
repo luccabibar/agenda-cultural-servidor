@@ -4,10 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class AgendaCulturalServidorApplicationTests {
-
+class AgendaCulturalServidorApplicationTests
+{
 	@Test
-	void contextLoads() {
-	}
-
+	void contextLoads() { }
 }
