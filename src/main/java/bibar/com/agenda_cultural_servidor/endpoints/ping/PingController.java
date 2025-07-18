@@ -21,12 +21,13 @@ public class PingController
         pingService = pingServiceInj;        
     }
 
+    
     @GetMapping
     ResponseEntity<ResponseWrapper<String>> ping()
     {
         String result = pingService.ping();
+        
         ResponseWrapper<String> response = new ResponseWrapper<String>(result);
-
         return ResponseEntity.ok(response);
     }
 }
