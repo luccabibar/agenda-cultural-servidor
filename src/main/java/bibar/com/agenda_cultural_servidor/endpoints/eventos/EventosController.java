@@ -1,5 +1,7 @@
 package bibar.com.agenda_cultural_servidor.endpoints.eventos;
 
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
 import bibar.com.agenda_cultural_servidor.records.ResponseWrapper;
 
@@ -50,9 +53,17 @@ public class EventosController
     
 
     @GetMapping("/{id}")
-    void getEvento(
+    ResponseEntity<ResponseWrapper<Evento>> getEvento(
         @PathVariable int id
     ) {
-        
+        Optional<Evento> result =  eventosService.getEvento(id);
+
+        if(result.isPresent()){
+            ResponseWrapper<Evento> response = new ResponseWrapper<Evento>(result.get());
+            return ResponseEntity.ok(response);
+        }
+        else{
+            return ResponseEntity.notFound().build();
+        }
     }
 }

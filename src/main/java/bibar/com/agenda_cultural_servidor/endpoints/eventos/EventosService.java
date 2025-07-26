@@ -1,9 +1,11 @@
 package bibar.com.agenda_cultural_servidor.endpoints.eventos;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
 
 @Service
@@ -37,8 +39,10 @@ public class EventosService
     }
 
 
-    void getEvento()
+    Optional<Evento> getEvento(int id)
     {
+        Optional<Evento> res = eventosRepository.getEvento(id);
 
+        return res;
     }
 }
