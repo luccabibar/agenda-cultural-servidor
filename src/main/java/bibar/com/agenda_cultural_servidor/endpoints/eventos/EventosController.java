@@ -1,5 +1,6 @@
 package bibar.com.agenda_cultural_servidor.endpoints.eventos;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class EventosController
 
 
     @GetMapping
-    void buscaEventos(
+    public void buscaEventos(
         @RequestParam(required = false) String texto,
         @RequestParam(required = false) String categoria,
         @RequestParam(required = false) String diaUpper,
@@ -38,12 +39,12 @@ public class EventosController
         @RequestParam(required = false) String horaLower,
         @RequestParam(required = false) String regiao
     ) {
-
+        // List<Evento> result = eventosService.buscar();
     }
     
     
     @GetMapping("filtros")
-    ResponseEntity<ResponseWrapper<FiltrosBusca>> filtrosBuscaEventos()
+    public ResponseEntity<ResponseWrapper<FiltrosBusca>> filtrosBuscaEventos()
     {
         FiltrosBusca result = eventosService.filtrosBusca();
         
@@ -53,7 +54,7 @@ public class EventosController
     
 
     @GetMapping("/{id}")
-    ResponseEntity<ResponseWrapper<Evento>> getEvento(
+    public ResponseEntity<ResponseWrapper<Evento>> getEvento(
         @PathVariable int id
     ) {
         Optional<Evento> result =  eventosService.getEvento(id);

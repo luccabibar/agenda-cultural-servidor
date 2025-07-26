@@ -20,13 +20,13 @@ public class EventosService
     }
 
 
-    void buscar()
+    public void buscar()
     {
 
     }
 
     
-    FiltrosBusca filtrosBusca()
+    public FiltrosBusca filtrosBusca()
     {
         List<String> regioes, categorias;
 
@@ -39,7 +39,7 @@ public class EventosService
     }
 
 
-    Optional<Evento> getEvento(int id)
+    public Optional<Evento> getEvento(int id)
     {
         Optional<Evento> res = eventosRepository.getEvento(id);
 

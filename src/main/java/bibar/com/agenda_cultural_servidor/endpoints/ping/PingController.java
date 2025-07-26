@@ -23,7 +23,7 @@ public class PingController
 
     
     @GetMapping
-    ResponseEntity<ResponseWrapper<String>> ping()
+    public ResponseEntity<ResponseWrapper<String>> ping()
     {
         String result = pingService.ping();
         

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PingService
 {
-    String ping()
+    public String ping()
     {
         return "pong";
     }

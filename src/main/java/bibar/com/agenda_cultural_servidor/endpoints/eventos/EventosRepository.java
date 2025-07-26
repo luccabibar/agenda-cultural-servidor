@@ -25,7 +25,7 @@ public class EventosRepository
     }
 
 
-    List<String> listRegioes()
+    public List<String> listRegioes()
     {
         String query = """
             SELECT
@@ -48,7 +48,7 @@ public class EventosRepository
     }
 
 
-    List<String> listCategorias()
+    public List<String> listCategorias()
     {
         String query = """
             SELECT
@@ -71,7 +71,7 @@ public class EventosRepository
     }
 
 
-    Optional<Evento> getEvento(int id)
+    public Optional<Evento> getEvento(int id)
     {
         // faz query
         String query = """
