@@ -30,7 +30,7 @@ public class EventosController
 
 
     @GetMapping
-    public void buscaEventos(
+    public ResponseEntity<ResponseWrapper<List<Evento>>> buscaEventos(
         @RequestParam(required = false) String texto,
         @RequestParam(required = false) String categoria,
         @RequestParam(required = false) String diaUpper,
@@ -39,7 +39,18 @@ public class EventosController
         @RequestParam(required = false) String horaLower,
         @RequestParam(required = false) String regiao
     ) {
-        // List<Evento> result = eventosService.buscar();
+        List<Evento> result = eventosService.buscar(
+            texto,
+            categoria,
+            diaUpper,
+            diaLower,
+            horaUpper,
+            horaLower,
+            regiao
+        );
+
+        ResponseWrapper<List<Evento>> response = new ResponseWrapper<List<Evento>>(result); 
+        return ResponseEntity.ok(response);
     }
     
     
@@ -60,6 +71,10 @@ public class EventosController
         Optional<Evento> result =  eventosService.getEvento(id);
 
         if(result.isPresent()){
+
+            
+            System.out.println("TIME -> " + result.get().horarioInicio().toString());
+
             ResponseWrapper<Evento> response = new ResponseWrapper<Evento>(result.get());
             return ResponseEntity.ok(response);
         }

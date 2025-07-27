@@ -1,6 +1,6 @@
 package bibar.com.agenda_cultural_servidor.endpoints.eventos.records;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import bibar.com.agenda_cultural_servidor.records.Moderador;
@@ -8,7 +8,7 @@ import bibar.com.agenda_cultural_servidor.records.Organizador;
 
 public record Evento (
     Integer id,
-    statusEvento status,
+    String status, // talvez deva ser um enum?
 
     String nome,
     String descricao,
@@ -19,8 +19,8 @@ public record Evento (
     Organizador organizador,
     Moderador moderador,
 
-    Timestamp horarioInicio,
-    Timestamp horarioFim,
+    LocalDateTime horarioInicio,
+    LocalDateTime horarioFim,
     
     String regiao,
     String endereco,
