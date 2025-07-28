@@ -146,7 +146,12 @@ public class EventosRepository
             params.add(new ParamBusca(
                 texto.get(), 
                 "texto", 
-                "UPPER(ev.nome) LIKE CONCAT('%%', UPPER(:texto), '%%')"
+                """
+                   (
+                        UPPER(ev.nome) LIKE CONCAT('%%', UPPER(:texto), '%%')
+                        OR UPPER(ev.descricao) LIKE CONCAT('%%', UPPER(:texto), '%%')
+                   )
+                """
             ));
 
         if(categoria.isPresent())
