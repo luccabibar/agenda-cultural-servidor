@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.AtualizacaoEvento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
-import bibar.com.agenda_cultural_servidor.records.Organizador;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Organizador;
 
 @Repository
 public class EventosRepository

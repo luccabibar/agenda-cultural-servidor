@@ -3,8 +3,8 @@ package bibar.com.agenda_cultural_servidor.endpoints.eventos.records;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import bibar.com.agenda_cultural_servidor.records.Moderador;
-import bibar.com.agenda_cultural_servidor.records.Organizador;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Moderador;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Organizador;
 
 public record Evento (
     Integer id,
