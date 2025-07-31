@@ -12,4 +12,18 @@ public class UsuariosService
     ) {
         usuariosRepository = usuariosRepositoryInj;
     }
+
+
+    public boolean criaPessoa(
+        String nome,
+        String email,
+        String senha
+    ) {
+        Boolean existe = usuariosRepository.usuarioExiste(nome, email, "");
+
+        return existe;
+
+        // if(existe)
+        //     return false;
+    }
 }

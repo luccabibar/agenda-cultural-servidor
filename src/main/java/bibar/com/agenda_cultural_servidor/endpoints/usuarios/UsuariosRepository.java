@@ -40,8 +40,8 @@ public class UsuariosRepository
 
         List<Map<String, Object>> resList = jdbcClient
             .sql(query)
-            .param("email", email)
             .param("nome", nome)
+            .param("email", email)
             .param("cpf", cpf)
             .query()
             .listOfRows();
