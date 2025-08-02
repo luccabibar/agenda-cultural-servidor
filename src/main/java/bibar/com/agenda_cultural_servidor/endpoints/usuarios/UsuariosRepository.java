@@ -48,4 +48,40 @@ public class UsuariosRepository
 
         return resList.size() > 0;
     }
+
+
+    boolean criaPessoa(String nome, String email, String senha)
+    {
+        String query = """
+            BEGIN TRANSACTION;
+
+            INSERT INTO usuario (
+                email,
+                senha,
+                nome,
+                status
+            )
+            VALUES (
+                :email,
+                :senha,
+                :nome,
+                'Ativo'
+            );
+
+            INSERT INTO pessoa (
+                id
+            )
+            VALUES (
+                (
+                    SELECT us.id 
+                    FROM usuario AS us 
+                    WHERE us.email = :email AND us.senha = :senha
+                )
+            );
+
+            COMMIT;
+        """;
+
+        return false;
+    }
 }
