@@ -82,6 +82,13 @@ public class UsuariosRepository
             COMMIT;
         """;
 
-        return false;
+        int res = jdbcClient
+            .sql(query)
+            .param("email", email)
+            .param("senha", senha)
+            .param("nome", nome)
+            .update();
+
+        return res == 1;
     }
 }

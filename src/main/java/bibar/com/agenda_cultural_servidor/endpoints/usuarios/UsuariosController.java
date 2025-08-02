@@ -33,6 +33,7 @@ public class UsuariosController
         String email = body.email();
         String senha = body.senha();
        
+        // TODO: erros custom  
         boolean result = usuariosService.criaPessoa(nome, email, senha);
 
         ResponseWrapper<Boolean> response = new ResponseWrapper<Boolean>(result);
