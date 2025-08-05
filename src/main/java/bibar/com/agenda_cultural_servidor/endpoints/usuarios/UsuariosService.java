@@ -1,10 +1,10 @@
 package bibar.com.agenda_cultural_servidor.endpoints.usuarios;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import bibar.com.agenda_cultural_servidor.utils.CpfChecker;
 import bibar.com.agenda_cultural_servidor.utils.SenhaManager;
 
 @Service
@@ -42,6 +42,34 @@ public class UsuariosService
             && senha.length() <= 64;
             // && Pattern.matches("", senha);
     }
+
+
+    public Optional<String> login(String email, String senha)
+    {
+        if(!isEmailValid(email))
+            return Optional.empty();
+
+        // obtem sal para senha
+        Optional<String> salt = usuariosRepository.getDataCriacao(email);
+
+        // email nao presente no banco
+        if(salt.isEmpty())
+            return Optional.empty();
+
+        try{
+            // gera senha
+            senha = SenhaManager.hashPassword(senha, salt.get());
+        }
+        catch(NoSuchAlgorithmException ex){
+            System.err.println(ex.toString());
+            return Optional.empty();
+        }
+
+        Optional<String> tipoUsuario = usuariosRepository.autenticaUsuario(email, senha);
+
+        return tipoUsuario;
+    }
+
 
     public boolean criaPessoa(
         String nome,

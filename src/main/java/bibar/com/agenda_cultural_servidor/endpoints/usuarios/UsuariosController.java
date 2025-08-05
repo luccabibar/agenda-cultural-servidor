@@ -1,5 +1,7 @@
 package bibar.com.agenda_cultural_servidor.endpoints.usuarios;
 
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,9 +21,28 @@ public class UsuariosController
     private UsuariosService usuariosService;
 
     public UsuariosController(
-        UsuariosService usuariosControllerInj
+        UsuariosService usuariosServiceInj
     ) {
-        usuariosService = usuariosControllerInj;
+        usuariosService = usuariosServiceInj;
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<ResponseWrapper<String>> login(
+        @Valid @RequestBody LoginRequestBody body
+    ) {
+        String email = body.email();
+        String senha = body.senha();
+         
+        Optional<String> result = usuariosService.login(email, senha);
+
+        // nao encontrou; forbidden
+        if(result.isEmpty())
+            return ResponseEntity.status(403).build();
+
+
+        ResponseWrapper<String> response = new ResponseWrapper<String>(result.get());
+        return ResponseEntity.ok(response);
     }
 
 
@@ -40,6 +61,13 @@ public class UsuariosController
         return ResponseEntity.ok(response);
     }
 }
+
+
+record LoginRequestBody ( 
+    @NotBlank String email, 
+    @NotBlank String senha
+) { }
+
 
 record CriaPessoaRequestBody (
     @NotBlank String nome, 
