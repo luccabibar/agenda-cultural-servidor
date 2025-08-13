@@ -7,6 +7,9 @@ import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.records.TipoUsuario;
+
 @Repository
 public class UsuariosRepository
 {
@@ -75,10 +78,11 @@ public class UsuariosRepository
     }
 
 
-    public Optional<String> autenticaUsuario(String email, String senha)
+    public Optional<Usuario> autenticaUsuario(String email, String senha)
     {
         String query = """
             SELECT
+                us.id AS id,
                 pes.id AS pes_id,
                 org.id AS org_id,
                 mdr.id AS mdr_id
@@ -112,23 +116,27 @@ public class UsuariosRepository
 
         Map<String, Object> result = resList.get(0);
         
-        // TODO: ENUM
+        Integer id = (Integer) result.get("id");
+        TipoUsuario tipo;
 
         // id pessoa presente; usuario eh pessoa
         if(result.get("pes_id") != null)
-            return Optional.of("PESSOA");
+            tipo = TipoUsuario.PESSOA;
 
         // id organizador presente; usuario eh organizador
         else if(result.get("org_id") != null)
-            return Optional.of("ORGANIZADOR");
+            tipo = TipoUsuario.ORGANIZADOR;
 
         // id moderador presente; usuario eh moderador
         else if(result.get("mdr_id") != null)
-            return Optional.of("MODERADOR");
+            tipo = TipoUsuario.MODERADOR;
 
         // nenhum id presente? usuario nao eh nada
         else
             return Optional.empty();
+
+        Usuario response = new Usuario(id, tipo);
+        return Optional.of(response);
     }
 
 

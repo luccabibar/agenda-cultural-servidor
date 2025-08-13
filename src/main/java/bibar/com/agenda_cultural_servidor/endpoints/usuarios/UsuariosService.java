@@ -5,16 +5,21 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.utils.JWTManager;
 import bibar.com.agenda_cultural_servidor.utils.SenhaManager;
 
 @Service
 public class UsuariosService
 {
+    private JWTManager JWTMan;
     private UsuariosRepository usuariosRepository;
 
     public UsuariosService (
+        JWTManager JWTManInj,
         UsuariosRepository usuariosRepositoryInj
     ) {
+        JWTMan = JWTManInj;
         usuariosRepository = usuariosRepositoryInj;
     }
 
@@ -65,9 +70,17 @@ public class UsuariosService
             return Optional.empty();
         }
 
-        Optional<String> tipoUsuario = usuariosRepository.autenticaUsuario(email, senha);
+        //  pega dados do usuario  
+        Optional<Usuario> usuario = usuariosRepository.autenticaUsuario(email, senha);
 
-        return tipoUsuario;
+        // se nao encontrou dados
+        if(usuario.isEmpty())
+            return Optional.empty();
+
+        // gera token de autenticacao
+        Optional<String> authToken = JWTMan.encrypt(usuario.get());
+
+        return authToken;
     }
 
 
