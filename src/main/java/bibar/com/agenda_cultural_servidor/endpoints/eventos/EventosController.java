@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +15,6 @@ import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca
 import bibar.com.agenda_cultural_servidor.records.ResponseWrapper;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/eventos")
 public class EventosController
 {
@@ -54,7 +52,7 @@ public class EventosController
     }
     
     
-    @GetMapping("filtros")
+    @GetMapping("/filtros")
     public ResponseEntity<ResponseWrapper<FiltrosBusca>> filtrosBuscaEventos()
     {
         FiltrosBusca result = eventosService.filtrosBusca();
@@ -71,10 +69,6 @@ public class EventosController
         Optional<Evento> result =  eventosService.getEvento(id);
 
         if(result.isPresent()){
-
-            
-            System.out.println("TIME -> " + result.get().horarioInicio().toString());
-
             ResponseWrapper<Evento> response = new ResponseWrapper<Evento>(result.get());
             return ResponseEntity.ok(response);
         }

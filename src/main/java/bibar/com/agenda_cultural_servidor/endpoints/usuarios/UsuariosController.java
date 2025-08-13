@@ -3,7 +3,6 @@ package bibar.com.agenda_cultural_servidor.endpoints.usuarios;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +13,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/usuarios")
 public class UsuariosController
 {
@@ -36,10 +34,9 @@ public class UsuariosController
          
         Optional<String> result = usuariosService.login(email, senha);
 
-        // nao encontrou; forbidden
+        // nao encontrou; unauthorized
         if(result.isEmpty())
-            return ResponseEntity.status(403).build();
-
+            return ResponseEntity.status(401).build();
 
         ResponseWrapper<String> response = new ResponseWrapper<String>(result.get());
         return ResponseEntity.ok(response);
