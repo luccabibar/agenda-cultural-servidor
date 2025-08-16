@@ -1,6 +1,8 @@
 package bibar.com.agenda_cultural_servidor.autenticacao;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -15,13 +17,23 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class AutenticacaoFilter extends OncePerRequestFilter
 {
-    // private List<Object> doNotFilter;
+    private List<EndpointMatch> doNotFilter;
     private JWTManager JWTMan;
 
     AutenticacaoFilter(
         JWTManager JWTManInj
     ) {
         JWTMan = JWTManInj;
+
+        // TODO: essa lista deve ficar aqui??
+        doNotFilter = Arrays.asList(
+            EndpointMatch.of("GET","\\/ping(?:\\/[\\w\\d]+)*"), // match util: (?:\\/[\\w\\d]+)* = "/qualquer_coisa" 0 ou mais vezes
+            EndpointMatch.of("GET","\\/eventos"),
+            EndpointMatch.of("GET","\\/eventos/filtros"),
+            EndpointMatch.of("GET","\\/eventos/[\\d]+"),
+            EndpointMatch.of("POST","\\/usuarios\\/login"),
+            EndpointMatch.of("POST","\\/usuarios\\/pessoas")
+        );
     }
 
 
@@ -49,27 +61,46 @@ public class AutenticacaoFilter extends OncePerRequestFilter
 
         String authHeader = request.getHeader("Authorization");
         
-        if(!isAuthHeaderValid(authHeader)){
-            chain.doFilter(request, response); // TODO: remover pos should not fileter
-            return; 
-        }
+        // se formato nao eh valido
+        if(!isAuthHeaderValid(authHeader))
+        return;
         
         String token = authHeader.split(" ")[1];
-        System.out.println("JWT:    " + token); 
 
-
+        // executa request se token for valdia
         if(JWTMan.isValid(token))
-            System.out.println("omagaaaa toekn valida!! :D");
             chain.doFilter(request, response);
     }
 
 
-    // TODO: setup should not filter
-    // @Override
-    // protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException
-    // {
-    //     return doNotFilter
-    //         .stream()
-    //         .anyMatch(obj -> obj.equals(request.getRequestURL())); // TODO: implement filter
-    // }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException
+    {
+        String method = request.getMethod();
+        String uri = request.getRequestURI();
+
+        // verifica se URI combina com algum endpoint liberado
+        boolean match = doNotFilter
+            .stream()
+            .anyMatch(edp -> edp.mathces(method, uri));
+        
+        System.out.println(method + " " + uri + " shuold not filter? " + (match ? "true" : "false"));
+
+        // false = sera filtrado
+        return match;
+    }
+}
+
+
+record EndpointMatch (String method, String URIRegEx)
+{
+    public static EndpointMatch of(String methodInj, String URIRegExInj)
+    {
+        return new EndpointMatch(methodInj, URIRegExInj);
+    }
+
+    public boolean mathces(String cmpMethod, String cmpURI)
+    {
+        return cmpMethod.equals(method) && cmpURI.matches(URIRegEx);
+    }
 }
