@@ -57,6 +57,25 @@ public class UsuariosController
         ResponseWrapper<Boolean> response = new ResponseWrapper<Boolean>(result);
         return ResponseEntity.ok(response);
     }
+    
+
+    @PostMapping("/organizadores")
+    public ResponseEntity<ResponseWrapper<Boolean>> criaOrganizador(
+        @Valid @RequestBody CriaOrganizadorRequestBody body
+    ) {
+        String nome = body.nome();
+        String email = body.email();
+        String cpf = body.cpf();
+        String senha = body.senha();
+       
+        // TODO: erros custom  
+        boolean result = usuariosService.criaOrganizador(nome, email, cpf, senha);
+
+        System.out.println(nome + ", " + email + ", " + cpf + ", " + senha + ": " + (result ? "y" : "n"));
+
+        ResponseWrapper<Boolean> response = new ResponseWrapper<Boolean>(result);
+        return ResponseEntity.ok(response);
+    }
 }
 
 
@@ -69,5 +88,13 @@ record LoginRequestBody (
 record CriaPessoaRequestBody (
     @NotBlank String nome, 
     @NotBlank String email, 
+    @NotBlank String senha
+) { }
+
+
+record CriaOrganizadorRequestBody (
+    @NotBlank String nome, 
+    @NotBlank String email, 
+    @NotBlank String cpf, 
     @NotBlank String senha
 ) { }

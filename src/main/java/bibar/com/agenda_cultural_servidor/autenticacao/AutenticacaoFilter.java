@@ -32,7 +32,8 @@ public class AutenticacaoFilter extends OncePerRequestFilter
             EndpointMatch.of("GET","\\/eventos/filtros"),
             EndpointMatch.of("GET","\\/eventos/[\\d]+"),
             EndpointMatch.of("POST","\\/usuarios\\/login"),
-            EndpointMatch.of("POST","\\/usuarios\\/pessoas")
+            EndpointMatch.of("POST","\\/usuarios\\/pessoas"),
+            EndpointMatch.of("POST","\\/usuarios\\/organizadores")
         );
     }
 

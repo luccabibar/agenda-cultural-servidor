@@ -1,11 +1,19 @@
 package bibar.com.agenda_cultural_servidor.utils;
 
-public class CpfChecker {
-public static boolean isCpfValid(String cpf, boolean sujo)
+public class CpfChecker
+{
+    public static String limpaCpfCnpj(String str)
+    {
+        return str.replaceAll("\\D", "");
+    }
+
+
+
+    public static boolean isCpfValid(String cpf, boolean sujo)
     {
         // limpeza da string
         if(sujo)
-            cpf = cpf.replaceAll("\\D", "");
+            cpf = limpaCpfCnpj(cpf);
 
         // formato
         if (cpf.length() != 11 || !cpf.matches("[\\d]+"))
@@ -48,7 +56,7 @@ public static boolean isCpfValid(String cpf, boolean sujo)
     {
         // limpeza da string
         if(sujo)
-            cnpj = cnpj.replaceAll("\\D", "");
+            cnpj = limpaCpfCnpj(cnpj);
 
         // formato
         if (cnpj.length() != 11 || !cnpj.matches("[\\d]+"))

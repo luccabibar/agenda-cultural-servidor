@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.utils.CpfChecker;
 import bibar.com.agenda_cultural_servidor.utils.JWTManager;
 import bibar.com.agenda_cultural_servidor.utils.SenhaManager;
 
@@ -109,6 +110,40 @@ public class UsuariosService
 
         // realiza criacao
         Boolean res = usuariosRepository.criaPessoa(nome, email, senha);
+
+        return res;
+    }
+    
+
+    public boolean criaOrganizador(
+        String nome,
+        String email,
+        String cpf,
+        String senha
+    ) {
+        // valida dados
+        cpf = CpfChecker.limpaCpfCnpj(cpf);
+        
+        if(!isNomeValid(nome) || !isEmailValid(email) || !CpfChecker.isCpfCnpjValid(cpf) || !isSenhaValid(senha))
+            return false;
+
+        // verifica se ja esiste
+        Boolean existe = usuariosRepository.usuarioExiste(nome, email, cpf);
+        System.out.println(existe ? "existe" : "nao existe");
+
+        if(existe)
+            return false;
+
+        try {
+            senha = SenhaManager.generateSenha(senha);
+        }
+        catch(NoSuchAlgorithmException ex){
+            System.err.println(ex.toString());
+            return false;
+        }
+
+        // realiza criacao
+        Boolean res = usuariosRepository.criaOrganizador(nome, email, cpf, senha);
 
         return res;
     }

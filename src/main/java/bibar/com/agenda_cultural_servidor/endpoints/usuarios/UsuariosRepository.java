@@ -140,6 +140,53 @@ public class UsuariosRepository
     }
 
 
+    public boolean criaOrganizador(String nome, String email, String cpf, String senha)
+    {
+        String query = """
+            BEGIN TRANSACTION;
+
+            INSERT INTO usuario (
+                email,
+                senha,
+                nome,
+                status
+            )
+            VALUES (
+                :email,
+                :senha,
+                :nome,
+                'Ativo'
+            );
+
+            INSERT INTO organizador (
+                id,
+                cpf_cnpj
+            )
+            VALUES (
+                (
+                    SELECT us.id 
+                    FROM usuario AS us 
+                    WHERE us.email = :email AND us.senha = :senha
+                ),
+                :cpf
+            );
+
+            COMMIT;
+        """;
+
+        jdbcClient
+            .sql(query)
+            .param("email", email)
+            .param("senha", senha)
+            .param("nome", nome)
+            .param("cpf", cpf)
+            .update();
+        
+        // TODO: aferir corretamente resultado do update
+        return usuarioExiste(nome, email, cpf);
+    }
+
+
     public boolean criaPessoa(String nome, String email, String senha)
     {
         String query = """
@@ -169,16 +216,18 @@ public class UsuariosRepository
                 )
             );
 
-            COMMIT;
+            COMMIT;   
         """;
 
-        int res = jdbcClient
+
+        jdbcClient
             .sql(query)
             .param("email", email)
             .param("senha", senha)
             .param("nome", nome)
             .update();
-
-        return res == 1;
+        
+        // TODO: aferir corretamente resultado do update
+        return usuarioExiste(nome, email, "");
     }
 }
