@@ -1,28 +1,41 @@
 package bibar.com.agenda_cultural_servidor.endpoints.eventos;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.records.JWTUser;
 import bibar.com.agenda_cultural_servidor.records.ResponseWrapper;
+import bibar.com.agenda_cultural_servidor.records.TipoUsuario;
+import bibar.com.agenda_cultural_servidor.utils.JWTManager;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/eventos")
 public class EventosController
 {
+    private JWTManager JWTMan;
     private EventosService eventosService;
 
     public EventosController (
+        JWTManager JWTManInj,
         EventosService eventosServiceInj
     ) {
+        JWTMan = JWTManInj;
         eventosService = eventosServiceInj;
     }
 
@@ -51,7 +64,54 @@ public class EventosController
         return ResponseEntity.ok(response);
     }
     
+
+    @PostMapping
+    public ResponseEntity<ResponseWrapper<Boolean>> criaEvento(
+        @Valid @RequestBody PostEventoRequestBody body,
+        @RequestHeader(name = "Authorization") String authHeader
+    ) {
+        String nome = body.nome();
+        String descricao = body.descricao();
+        String categoria = body.categoria();
+        String contato = body.contato();
+        String horaIni = body.horaIni();
+        String horaFim = body.horaFim();
+        String regiao = body.regiao();
+        String endereco = body.endereco();
+
+        Usuario usuario;
+        
+        try{
+            // talvez passar isto para o jwtman?
+            Optional<String> token = JWTManager.getTokenFromHeader(authHeader);
+            Optional<JWTUser> userJWT = JWTMan.decrypt(token.get());
+            usuario = Usuario.of(userJWT.get()).get();
+        }
+        catch(NoSuchElementException ex){
+            System.out.println("hm isto nap era pra acontecer. erro ao obter dados do jwt: " + ex.toString());
+            return ResponseEntity.status(401).build();
+        }
+
+        if(usuario.tipoUsuario() != TipoUsuario.ORGANIZADOR)
+            return ResponseEntity.status(401).build(); // TODO: mensagens de erro custo
+        
+        boolean result = eventosService.criaEvento(
+            usuario,
+            nome,
+            descricao,
+            categoria,
+            contato,
+            horaIni,
+            horaFim,
+            regiao,
+            endereco
+        );
+
+        ResponseWrapper<Boolean> response = new ResponseWrapper<Boolean>(result);
+        return ResponseEntity.ok(response);
+    }
     
+
     @GetMapping("/filtros")
     public ResponseEntity<ResponseWrapper<FiltrosBusca>> filtrosBuscaEventos()
     {
@@ -77,3 +137,15 @@ public class EventosController
         }
     }
 }
+
+
+record PostEventoRequestBody (
+    @NotBlank String nome, 
+    @NotBlank String descricao, 
+    @NotBlank String categoria, 
+    @NotBlank String contato, 
+    @NotBlank String horaIni, 
+    @NotBlank String horaFim, 
+    @NotBlank String regiao,
+    @NotBlank String endereco
+) { }

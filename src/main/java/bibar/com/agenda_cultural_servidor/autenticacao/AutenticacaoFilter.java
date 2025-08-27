@@ -3,6 +3,7 @@ package bibar.com.agenda_cultural_servidor.autenticacao;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -38,13 +39,6 @@ public class AutenticacaoFilter extends OncePerRequestFilter
     }
 
 
-    private boolean isAuthHeaderValid(String authHeader)
-    {
-        return authHeader != null
-            && authHeader.matches("[Bb]earer [\\w\\d_-]+\\.[\\w\\d_-]+\\.[\\w\\d_-]+");
-    }
-
-
     @Override
     public void doFilterInternal(
         HttpServletRequest request, 
@@ -60,16 +54,12 @@ public class AutenticacaoFilter extends OncePerRequestFilter
             return;
         }
 
+        // verifica se valor em authHeader eh um token valido no formato certo, e entao extrai
         String authHeader = request.getHeader("Authorization");
-        
-        // se formato nao eh valido
-        if(!isAuthHeaderValid(authHeader))
-        return;
-        
-        String token = authHeader.split(" ")[1];
+        Optional<String> token = JWTManager.getTokenFromHeader(authHeader);
 
         // executa request se token for valdia
-        if(JWTMan.isValid(token))
+        if(token.isPresent() && JWTMan.isTokenValid(token.get()))
             chain.doFilter(request, response);
     }
 

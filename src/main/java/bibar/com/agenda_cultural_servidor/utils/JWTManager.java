@@ -34,6 +34,23 @@ public class JWTManager
     }
 
 
+    public static boolean isAuthHeaderValid(String authHeader)
+    {
+        return authHeader != null
+            && authHeader.matches("[Bb]earer [\\w\\d_-]+\\.[\\w\\d_-]+\\.[\\w\\d_-]+");
+    }
+
+
+    public static Optional<String> getTokenFromHeader(String authHeader)
+    {
+        if(JWTManager.isAuthHeaderValid(authHeader))
+            return Optional.of(authHeader.split(" ")[1]);
+
+        else
+            return Optional.empty();
+    }
+
+
     // talvez deva ser private ??
     public Optional<String> encrypt(JWTUser target)
     {
@@ -101,7 +118,7 @@ public class JWTManager
     }
 
 
-    public boolean isValid(String target)
+    public boolean isTokenValid(String target)
     {
         try {
             JWT.require(algo)

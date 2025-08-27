@@ -2,6 +2,7 @@ package bibar.com.agenda_cultural_servidor.endpoints.eventos;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -339,6 +340,68 @@ public class EventosRepository
         );
 
         return Optional.of(evento);
+    }
+
+
+    public boolean criaEvento(
+        StatusEvento status,
+        String nome,
+        String descricao,
+        String categoria,
+        String contato,
+        int idOrganizador,
+        LocalDateTime horaIni,
+        LocalDateTime horaFim,
+        String regiao,
+        String endereco,
+        String enderecoLink
+    ) {
+        String query = """
+            INSERT INTO evento (
+                status,
+                nome,
+                descricao,
+                categoria,
+                contato,
+                organizador,
+                hora_ini,
+                hora_fim,
+                regiao,
+                endereco,
+                endereco_link
+            )
+            VALUES (
+                :status,
+                :nome,
+                :descricao,
+                :categoria,
+                :contato,
+                :organizador,
+                :hora_ini,
+                :hora_fim,
+                :regiao,
+                :endereco,
+                :endereco_link
+            );
+        """;
+
+
+        int res = jdbcClient
+            .sql(query)
+            .param("status", status.valor)
+            .param("nome", nome)
+            .param("descricao", descricao)
+            .param("categoria", categoria)
+            .param("contato", contato)
+            .param("organizador", idOrganizador)
+            .param("hora_ini", horaIni)
+            .param("hora_fim", horaFim)
+            .param("regiao", regiao)
+            .param("endereco", endereco)
+            .param("endereco_link", enderecoLink)
+            .update();
+
+        return res == 1;
     }
 }
 

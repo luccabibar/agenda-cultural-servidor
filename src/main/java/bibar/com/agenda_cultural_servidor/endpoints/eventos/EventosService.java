@@ -1,8 +1,10 @@
 package bibar.com.agenda_cultural_servidor.endpoints.eventos;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
+import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.StatusEvento;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
 
 @Service
 public class EventosService
@@ -21,6 +25,15 @@ public class EventosService
     ) {
         eventosRepository = eventosRepositoryInj;
     }
+
+
+    // validacoes
+    private boolean isNomeValid(String nome) { return nome != null && nome.length() <= 24; }
+    private boolean isDescricaoValid(String descricao) { return descricao != null && descricao.length() <= 256; }
+    private boolean isCategoriaValid(String categoria) { return categoria != null && categoria.length() <= 16; }
+    private boolean isContatoValid(String contato) { return contato != null && contato.length() <= 32; }
+    private boolean isRegiaoValid(String regiao) { return regiao != null && regiao.length() <= 24; }
+    private boolean isEnderecoValid(String endereco) { return endereco != null && endereco.length() <= 64; }
 
 
     public List<Evento> buscar(
@@ -69,5 +82,58 @@ public class EventosService
         Optional<Evento> res = eventosRepository.getEvento(id);
 
         return res;
+    }
+
+
+    public boolean criaEvento(
+        Usuario usuario,
+        String nome,
+        String descricao,
+        String categoria,
+        String contato,
+        String horaIniStr,
+        String horaFimStr,
+        String regiao,
+        String endereco
+    ) {
+        // valida dados, realzia conversoes necessarias
+        // TODO: endereco -> google maps link
+        LocalDateTime horaIni, horaFim;
+        
+        try{
+            horaIni = LocalDateTime.parse(horaIniStr);          
+            horaFim = LocalDateTime.parse(horaFimStr);
+
+        }
+        catch(DateTimeParseException ex){
+            System.out.println(ex.toString());
+            return false;
+        }
+        
+        if(
+            !isNomeValid(nome)
+            || !isDescricaoValid(descricao)
+            || !isCategoriaValid(categoria)
+            || !isContatoValid(contato)
+            || !isRegiaoValid(regiao)
+            || !isEnderecoValid(endereco)
+        )
+            return false;
+
+        eventosRepository.criaEvento(
+            StatusEvento.APROVADO,
+            nome,
+            descricao,
+            categoria,
+            contato,
+            usuario.id(),
+            horaIni,
+            horaFim,
+            regiao,
+            endereco,
+            "\"null\"" // link endereco
+        );
+
+        return true;
     }
 }
