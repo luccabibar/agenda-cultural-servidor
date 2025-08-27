@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.AtualizacaoEvento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
+import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.StatusEvento;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Organizador;
 
 @Repository
@@ -66,7 +67,7 @@ public class EventosRepository
         // monta where clause
         String whereClause = """
             WHERE
-                ev.status = 'Aprovado'
+                ev.status = :status
             
         """;
         
@@ -76,12 +77,14 @@ public class EventosRepository
         whereClause += ";";
 
         // transforma o objeto estruturado em pares K V (conforme especificado pelo jdbc)
-        Map<String, ?> paramMap = params
+        Map<String, Object> paramMap = params
             .stream()    
             .collect(Collectors.toMap(
                 ParamBusca::nome,
                 ParamBusca::value
             ));
+
+        paramMap.put("status", StatusEvento.APROVADO.valor);
 
         // realiza query
         List<Map<String, Object>> resList = jdbcClient
@@ -268,13 +271,14 @@ public class EventosRepository
                 ev.id = att.evento
             WHERE
                 ev.id = :id
-                AND ev.status = 'Aprovado'
+                AND ev.status = :status
             ;        
         """;
 
         List<Map<String, Object>> resList = jdbcClient
             .sql(query)
             .param("id", id)
+            .param("status", StatusEvento.APROVADO.valor)
             .query()
             .listOfRows();
     

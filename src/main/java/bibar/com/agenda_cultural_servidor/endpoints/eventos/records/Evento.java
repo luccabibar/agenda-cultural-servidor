@@ -8,7 +8,7 @@ import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Organizador
 
 public record Evento (
     Integer id,
-    String status, // talvez deva ser um enum?
+    StatusEvento status,
 
     String nome,
     String descricao,
@@ -28,13 +28,5 @@ public record Evento (
     
     List<AtualizacaoEvento> atualizacoes
 ) { }
-
-enum statusEvento
-{
-    EmAnalise,
-    Aprovado,    
-    Reprovado,   
-    Cancelado   
-}
 
 
