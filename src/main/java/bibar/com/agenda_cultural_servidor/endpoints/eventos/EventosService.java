@@ -28,12 +28,16 @@ public class EventosService
 
 
     // validacoes
-    private boolean isNomeValid(String nome) { return nome != null && nome.length() <= 24; }
-    private boolean isDescricaoValid(String descricao) { return descricao != null && descricao.length() <= 256; }
-    private boolean isCategoriaValid(String categoria) { return categoria != null && categoria.length() <= 16; }
-    private boolean isContatoValid(String contato) { return contato != null && contato.length() <= 32; }
-    private boolean isRegiaoValid(String regiao) { return regiao != null && regiao.length() <= 24; }
-    private boolean isEnderecoValid(String endereco) { return endereco != null && endereco.length() <= 64; }
+    private boolean isNomeEventoValid(String nome) { return nome != null && nome.length() <= 24; }
+    private boolean isDescricaoEventoValid(String descricao) { return descricao != null && descricao.length() <= 256; }
+    private boolean isCategoriaEventoValid(String categoria) { return categoria != null && categoria.length() <= 16; }
+    private boolean isContatoEventoValid(String contato) { return contato != null && contato.length() <= 32; }
+    private boolean isRegiaoEventoValid(String regiao) { return regiao != null && regiao.length() <= 24; }
+    private boolean isEnderecoEventoValid(String endereco) { return endereco != null && endereco.length() <= 64; }
+    private boolean isIdEventoValid(Integer id) { return id != null && id > 0; }
+
+    private boolean isTituloAttValid(String titulo) { return titulo != null && titulo.length() <= 24; }
+    private boolean isTextoAttValid(String texto) { return texto != null && texto.length() <= 256; }
 
 
     public List<Evento> buscar(
@@ -111,16 +115,16 @@ public class EventosService
         }
         
         if(
-            !isNomeValid(nome)
-            || !isDescricaoValid(descricao)
-            || !isCategoriaValid(categoria)
-            || !isContatoValid(contato)
-            || !isRegiaoValid(regiao)
-            || !isEnderecoValid(endereco)
+            !isNomeEventoValid(nome)
+            || !isDescricaoEventoValid(descricao)
+            || !isCategoriaEventoValid(categoria)
+            || !isContatoEventoValid(contato)
+            || !isRegiaoEventoValid(regiao)
+            || !isEnderecoEventoValid(endereco)
         )
             return false;
 
-        eventosRepository.criaEvento(
+        boolean res = eventosRepository.criaEvento(
             StatusEvento.APROVADO,
             nome,
             descricao,
@@ -134,6 +138,42 @@ public class EventosService
             "\"null\"" // link endereco
         );
 
-        return true;
+        return res;
+    }
+
+
+    public boolean addAtualizacaoEvento(
+        Integer idEvento,
+        Usuario organizador,
+        String titulo,
+        String texto
+    ) {
+        if(
+            !isIdEventoValid(idEvento)
+            || !isTituloAttValid(titulo)
+            || !isTextoAttValid(texto)
+        )
+            return false;
+
+        /*
+            nao eh necessario checar se o usuario eh o dono deste evento,
+            esta checagem eh feita na propria query de insercao
+
+            entretanto, decido checar por tornar o codigo mais seguro, e menos ambiguo
+            mais devagar (duas requisicoes), mais seguro
+        */ 
+        Optional<Evento> evento = getEvento(idEvento);
+
+        if(evento.isEmpty() || evento.get().organizador().id() != organizador.id())
+            return false;
+
+        boolean res = eventosRepository.addAtualizacaoEvento(
+            idEvento,
+            organizador.id(),
+            titulo,
+            texto
+        );
+
+        return res;
     }
 }

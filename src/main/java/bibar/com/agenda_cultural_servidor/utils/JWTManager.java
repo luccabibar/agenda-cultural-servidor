@@ -140,4 +140,28 @@ public class JWTManager
             return false;
         }
     }
+
+
+    public Optional<JWTUser> fullDecryptFromHeader(String authHeader)
+    {
+        Optional<String> token = getTokenFromHeader(authHeader);
+        
+        if(token.isEmpty()){
+            System.err.println("JWTManager:    Impossível processar decrypt: Header de autorizacao invalida: " + authHeader);
+            return Optional.empty();
+        }
+        if(!isTokenValid(token.get())){
+            System.err.println("JWTManager:    Impossível processar decrypt: Token invalido (vide log anterior): " + token);
+            return Optional.empty();
+        }
+
+        Optional<JWTUser> res = decrypt(token.get());
+        
+        if(res.isEmpty()){
+            System.err.println("JWTManager:    Impossível processar decrypt: Erro desencriptar (vide log anterior): " + token);
+            return Optional.empty();
+        }
+
+        return res;
+    } 
 }

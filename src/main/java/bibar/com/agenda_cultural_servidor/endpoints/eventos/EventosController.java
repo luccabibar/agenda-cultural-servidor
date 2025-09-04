@@ -1,7 +1,6 @@
 package bibar.com.agenda_cultural_servidor.endpoints.eventos;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
@@ -79,18 +78,13 @@ public class EventosController
         String regiao = body.regiao();
         String endereco = body.endereco();
 
-        Usuario usuario;
+        // pega user
+        Optional<JWTUser> userJWT = JWTMan.fullDecryptFromHeader(authHeader);
         
-        try{
-            // talvez passar isto para o jwtman?
-            Optional<String> token = JWTManager.getTokenFromHeader(authHeader);
-            Optional<JWTUser> userJWT = JWTMan.decrypt(token.get());
-            usuario = Usuario.of(userJWT.get()).get();
-        }
-        catch(NoSuchElementException ex){
-            System.out.println("hm isto nap era pra acontecer. erro ao obter dados do jwt: " + ex.toString());
+        if (userJWT.isEmpty())
             return ResponseEntity.status(401).build();
-        }
+
+        Usuario usuario = Usuario.of(userJWT.get()).get();
 
         if(usuario.tipoUsuario() != TipoUsuario.ORGANIZADOR)
             return ResponseEntity.status(401).build(); // TODO: mensagens de erro custo
@@ -136,6 +130,34 @@ public class EventosController
             return ResponseEntity.notFound().build();
         }
     }
+
+
+    @PostMapping("/{id}/atualizacoes")
+    public ResponseEntity<ResponseWrapper<Boolean>> criaAtualizacaoEvento(
+        @PathVariable int id,
+        @Valid @RequestBody PostAtualizacaoRequestBody body,
+        @RequestHeader(name = "Authorization") String authHeader
+    ) {
+        // pega dados do body
+        String titulo = body.titulo();
+        String texto = body.texto();
+
+        //pega user
+        Optional<JWTUser> userJWT = JWTMan.fullDecryptFromHeader(authHeader);
+        
+        if (userJWT.isEmpty())
+            return ResponseEntity.status(401).build();
+
+        Usuario usuario = Usuario.of(userJWT.get()).get();
+    
+        if(usuario.tipoUsuario() != TipoUsuario.ORGANIZADOR)
+            return ResponseEntity.status(401).build(); // TODO: mensagens de erro custo
+
+        boolean result = eventosService.addAtualizacaoEvento(id, usuario, titulo, texto);
+    
+        ResponseWrapper<Boolean> response = new ResponseWrapper<Boolean>(result);
+        return ResponseEntity.ok(response);
+    }
 }
 
 
@@ -148,4 +170,9 @@ record PostEventoRequestBody (
     @NotBlank String horaFim, 
     @NotBlank String regiao,
     @NotBlank String endereco
+) { }
+
+record PostAtualizacaoRequestBody (
+    @NotBlank String titulo,
+    @NotBlank String texto
 ) { }

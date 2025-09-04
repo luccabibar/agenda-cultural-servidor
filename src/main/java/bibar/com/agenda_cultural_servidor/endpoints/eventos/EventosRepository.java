@@ -10,7 +10,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.core.simple.JdbcClient.StatementSpec;
 import org.springframework.stereotype.Repository;
 
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.AtualizacaoEvento;
@@ -385,7 +387,6 @@ public class EventosRepository
             );
         """;
 
-
         int res = jdbcClient
             .sql(query)
             .param("status", status.valor)
@@ -401,6 +402,50 @@ public class EventosRepository
             .param("endereco_link", enderecoLink)
             .update();
 
+        return res == 1;
+    }
+
+
+    public boolean addAtualizacaoEvento(
+        Integer idEvento,
+        Integer idOrganizador,
+        String titulo,
+        String texto
+    ) {
+        // query de insercao deve checar se usuario eh o dono do evento 
+        String query = """
+            INSERT INTO atualizacao_evento (
+                evento,
+                titulo,
+                texto,
+                imagem
+            )
+            VALUES (
+                (SELECT ev.id FROM evento AS ev WHERE ev.organizador = :id_org AND ev.id = :id_ev),
+                :titulo,
+                :texto,
+                null
+            );                
+        """; 
+
+        int res = 0;
+        
+        StatementSpec stSpec = jdbcClient
+            .sql(query)
+            .param("id_org", idOrganizador)
+            .param("id_ev", idEvento)
+            .param("titulo", titulo)
+            .param("texto", texto);
+
+        try{
+            res = stSpec.update();
+        }
+        // provavelmente causada porque usuario nao eh dono desde evento
+        catch(DataIntegrityViolationException ex){
+            System.err.println(ex);
+            res = 0;
+        }
+        
         return res == 1;
     }
 }
