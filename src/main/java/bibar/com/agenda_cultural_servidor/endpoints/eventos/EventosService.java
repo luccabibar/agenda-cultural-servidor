@@ -14,6 +14,8 @@ import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.StatusEvento;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
+import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
 
 @Service
 public class EventosService
@@ -43,24 +45,43 @@ public class EventosService
     public List<Evento> buscar(
         String texto,
         String categoria,
-        String diaUpper,
-        String diaLower,
-        String horaUpper,
-        String horaLower,
+        String diaUpperStr,
+        String diaLowerStr,
+        String horaUpperStr,
+        String horaLowerStr,
         String regiao
     ) {
+        LocalTime horaUpper, horaLower;
+        LocalDate diaUpper, diaLower;
+        
+        // prepara dados emdata e hora
+        try {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+            
+            diaUpper = (diaUpperStr != null) ? LocalDate.parse(diaUpperStr, dateFormatter) : null;
+            diaLower = (diaLowerStr != null) ? LocalDate.parse(diaLowerStr, dateFormatter) : null;
+            horaUpper = (horaUpperStr != null) ? LocalTime.parse(horaUpperStr, timeFormatter) : null;
+            horaLower = (horaLowerStr != null) ? LocalTime.parse(horaLowerStr, timeFormatter) : null;
 
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        }
+        catch(DateTimeParseException ex){
+            System.err.println("EventosService: " + ex);
+
+            diaUpper = null;
+            diaLower = null;
+            horaUpper = null;
+            horaLower = null;
+        }
 
         // converte em optionals
         List<Evento> res = eventosRepository.buscarEventos(
             Optional.ofNullable(texto),
             Optional.ofNullable(categoria),
-            Optional.ofNullable(diaUpper != null ? LocalDate.parse(diaUpper, dateFormatter) : null), // converte esses dois
-            Optional.ofNullable(diaLower != null ? LocalDate.parse(diaLower, dateFormatter) : null), // String -> LocalDate
-            Optional.ofNullable(horaUpper != null ? LocalTime.parse(horaUpper, timeFormatter) : null), // converte esses dois
-            Optional.ofNullable(horaLower != null ? LocalTime.parse(horaLower, timeFormatter) : null), // String -> LocalTime
+            Optional.ofNullable(diaUpper),
+            Optional.ofNullable(diaLower),
+            Optional.ofNullable(horaUpper),
+            Optional.ofNullable(horaLower),
             Optional.ofNullable(regiao)
         );
 
@@ -99,7 +120,8 @@ public class EventosService
         String horaFimStr,
         String regiao,
         String endereco
-    ) {
+    ) throws IllegalArgumentException 
+    {
         // valida dados, realzia conversoes necessarias
         // TODO: endereco -> google maps link
         LocalDateTime horaIni, horaFim;
@@ -107,11 +129,10 @@ public class EventosService
         try{
             horaIni = LocalDateTime.parse(horaIniStr);          
             horaFim = LocalDateTime.parse(horaFimStr);
-
         }
         catch(DateTimeParseException ex){
             System.out.println(ex.toString());
-            return false;
+            throw new IllegalArgumentException(ex);
         }
         
         if(
@@ -122,7 +143,8 @@ public class EventosService
             || !isRegiaoEventoValid(regiao)
             || !isEnderecoEventoValid(endereco)
         )
-            return false;
+            throw new IllegalArgumentException("EventosService: um dos parametros enviados é considerado invalido");
+            
 
         boolean res = eventosRepository.criaEvento(
             StatusEvento.APROVADO,
@@ -147,13 +169,14 @@ public class EventosService
         Usuario organizador,
         String titulo,
         String texto
-    ) {
+    ) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException
+    {
         if(
             !isIdEventoValid(idEvento)
             || !isTituloAttValid(titulo)
             || !isTextoAttValid(texto)
         )
-            return false;
+            throw new IllegalArgumentException("EventosService: um dos parametros enviados é considerado invalido");
 
         /*
             nao eh necessario checar se o usuario eh o dono deste evento,
@@ -164,8 +187,11 @@ public class EventosService
         */ 
         Optional<Evento> evento = getEvento(idEvento);
 
-        if(evento.isEmpty() || evento.get().organizador().id() != organizador.id())
-            return false;
+        if(evento.isEmpty())
+            throw new ResourceNotFoundException("EventosService: impossivel encontrar evento (id: " + idEvento + ")" );
+
+        if(evento.get().organizador().id() != organizador.id())
+            throw new ForbiddenAccessException("EventosService: usuario nao tem acesso a esse recurso");
 
         boolean res = eventosRepository.addAtualizacaoEvento(
             idEvento,

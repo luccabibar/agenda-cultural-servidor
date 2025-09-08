@@ -1,13 +1,14 @@
 package bibar.com.agenda_cultural_servidor.endpoints.usuarios;
 
-import java.util.Optional;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
+import bibar.com.agenda_cultural_servidor.excessoes.ResourceAlreadyExistsException;
+import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
 import bibar.com.agenda_cultural_servidor.records.ResponseWrapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -32,13 +33,26 @@ public class UsuariosController
         String email = body.email();
         String senha = body.senha();
          
-        Optional<String> result = usuariosService.login(email, senha);
-
-        // nao encontrou; unauthorized
-        if(result.isEmpty())
+        String result;
+        
+        try{
+            result = usuariosService.login(email, senha);
+        }
+        catch(IllegalArgumentException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
+        catch(ResourceNotFoundException ex){
+            System.err.println(ex);
+            return ResponseEntity.notFound().build();
+        }
+        catch(ForbiddenAccessException ex){
+            System.err.println(ex);
             return ResponseEntity.status(401).build();
+        }
+        
 
-        ResponseWrapper<String> response = new ResponseWrapper<String>(result.get());
+        ResponseWrapper<String> response = ResponseWrapper.of(result);
         return ResponseEntity.ok(response);
     }
 
@@ -51,10 +65,22 @@ public class UsuariosController
         String email = body.email();
         String senha = body.senha();
        
-        // TODO: erros custom  
-        boolean result = usuariosService.criaPessoa(nome, email, senha);
+        
+        boolean result;
+        
+        try{
+            result = usuariosService.criaPessoa(nome, email, senha);
+        }
+        catch(IllegalArgumentException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
+        catch(ResourceAlreadyExistsException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
 
-        ResponseWrapper<Boolean> response = new ResponseWrapper<Boolean>(result);
+        ResponseWrapper<Boolean> response = ResponseWrapper.of(result);
         return ResponseEntity.ok(response);
     }
     
@@ -68,12 +94,23 @@ public class UsuariosController
         String cpf = body.cpf();
         String senha = body.senha();
        
-        // TODO: erros custom  
-        boolean result = usuariosService.criaOrganizador(nome, email, cpf, senha);
+         
+        boolean result;
+        
+        try{
+            result = usuariosService.criaOrganizador(nome, email, cpf, senha);
+        }
+        catch(IllegalArgumentException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
+        catch(ResourceAlreadyExistsException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
 
-        System.out.println(nome + ", " + email + ", " + cpf + ", " + senha + ": " + (result ? "y" : "n"));
 
-        ResponseWrapper<Boolean> response = new ResponseWrapper<Boolean>(result);
+        ResponseWrapper<Boolean> response = ResponseWrapper.of(result);
         return ResponseEntity.ok(response);
     }
 }

@@ -6,6 +6,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
+import bibar.com.agenda_cultural_servidor.excessoes.ResourceAlreadyExistsException;
+import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
 import bibar.com.agenda_cultural_servidor.utils.CpfChecker;
 import bibar.com.agenda_cultural_servidor.utils.JWTManager;
 import bibar.com.agenda_cultural_servidor.utils.SenhaManager;
@@ -50,25 +53,25 @@ public class UsuariosService
     }
 
 
-    public Optional<String> login(String email, String senha)
+    public String login(String email, String senha) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException
     {
         if(!isEmailValid(email))
-            return Optional.empty();
+            throw new IllegalArgumentException("UsuariosService: um dos parametros enviados é considerado invalido");
 
         // obtem sal para senha
         Optional<String> salt = usuariosRepository.getDataCriacao(email);
 
         // email nao presente no banco
         if(salt.isEmpty())
-            return Optional.empty();
+            throw new ResourceNotFoundException("UsuariosService: email nao esta presente no banco");
 
+        // gera senha
         try{
-            // gera senha
             senha = SenhaManager.hashPassword(senha, salt.get());
         }
         catch(NoSuchAlgorithmException ex){
             System.err.println(ex.toString());
-            return Optional.empty();
+            throw new IllegalArgumentException(ex);
         }
 
         //  pega dados do usuario  
@@ -76,12 +79,15 @@ public class UsuariosService
 
         // se nao encontrou dados
         if(usuario.isEmpty())
-            return Optional.empty();
+            throw new ForbiddenAccessException("UsuariosService: impossivel fazer login (rpovavelmente senha incorreta)");
 
         // gera token de autenticacao
         Optional<String> authToken = JWTMan.encrypt(usuario.get());
 
-        return authToken;
+        if(authToken.isEmpty())
+            throw new RuntimeException("UsuariosService: impossivel encriptar dados do usuario " + usuario.get());
+
+        return authToken.get();
     }
 
 
@@ -89,23 +95,24 @@ public class UsuariosService
         String nome,
         String email,
         String senha
-    ) {
+    ) throws IllegalArgumentException, ResourceAlreadyExistsException 
+    {
         // valida dados
         if(!isNomeValid(nome) || !isEmailValid(email) || !isSenhaValid(senha))
-            return false;
+            throw new IllegalArgumentException("UsuariosService: um dos parametros enviados é considerado invalido");
 
         // verifica se ja esiste
         Boolean existe = usuariosRepository.usuarioExiste(nome, email, "");
 
         if(existe)
-            return false;
+            throw new ResourceAlreadyExistsException();
 
         try {
             senha = SenhaManager.generateSenha(senha);
         }
         catch(NoSuchAlgorithmException ex){
             System.err.println(ex.toString());
-            return false;
+            throw new IllegalArgumentException(ex); // TODO: rehtorw com ecessao mais adequada
         }
 
         // realiza criacao
@@ -120,26 +127,26 @@ public class UsuariosService
         String email,
         String cpf,
         String senha
-    ) {
+    ) throws IllegalArgumentException, ResourceAlreadyExistsException
+    {
         // valida dados
         cpf = CpfChecker.limpaCpfCnpj(cpf);
         
         if(!isNomeValid(nome) || !isEmailValid(email) || !CpfChecker.isCpfCnpjValid(cpf) || !isSenhaValid(senha))
-            return false;
+            throw new IllegalArgumentException("UsuariosService: um dos parametros enviados é considerado invalido");
 
         // verifica se ja esiste
         Boolean existe = usuariosRepository.usuarioExiste(nome, email, cpf);
-        System.out.println(existe ? "existe" : "nao existe");
 
         if(existe)
-            return false;
+            throw new ResourceAlreadyExistsException();
 
         try {
             senha = SenhaManager.generateSenha(senha);
         }
         catch(NoSuchAlgorithmException ex){
             System.err.println(ex.toString());
-            return false;
+            throw new IllegalArgumentException(ex); // TODO: rehtorw com ecessao mais adequada
         }
 
         // realiza criacao

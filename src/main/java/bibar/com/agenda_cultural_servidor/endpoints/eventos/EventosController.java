@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
+import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
 import bibar.com.agenda_cultural_servidor.records.JWTUser;
 import bibar.com.agenda_cultural_servidor.records.ResponseWrapper;
 import bibar.com.agenda_cultural_servidor.records.TipoUsuario;
@@ -59,7 +61,7 @@ public class EventosController
             regiao
         );
 
-        ResponseWrapper<List<Evento>> response = new ResponseWrapper<List<Evento>>(result); 
+        ResponseWrapper<List<Evento>> response = ResponseWrapper.of(result); 
         return ResponseEntity.ok(response);
     }
     
@@ -87,21 +89,30 @@ public class EventosController
         Usuario usuario = Usuario.of(userJWT.get()).get();
 
         if(usuario.tipoUsuario() != TipoUsuario.ORGANIZADOR)
-            return ResponseEntity.status(401).build(); // TODO: mensagens de erro custo
+            return ResponseEntity.status(403).build(); 
         
-        boolean result = eventosService.criaEvento(
-            usuario,
-            nome,
-            descricao,
-            categoria,
-            contato,
-            horaIni,
-            horaFim,
-            regiao,
-            endereco
-        );
+            
+        boolean result;
 
-        ResponseWrapper<Boolean> response = new ResponseWrapper<Boolean>(result);
+        try{
+            result = eventosService.criaEvento(
+                usuario,
+                nome,
+                descricao,
+                categoria,
+                contato,
+                horaIni,
+                horaFim,
+                regiao,
+                endereco
+            );
+        }
+        catch(IllegalArgumentException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
+        
+        ResponseWrapper<Boolean> response = ResponseWrapper.of(result);
         return ResponseEntity.ok(response);
     }
     
@@ -111,7 +122,7 @@ public class EventosController
     {
         FiltrosBusca result = eventosService.filtrosBusca();
         
-        ResponseWrapper<FiltrosBusca> response = new ResponseWrapper<FiltrosBusca>(result); 
+        ResponseWrapper<FiltrosBusca> response = ResponseWrapper.of(result); 
         return ResponseEntity.ok(response);
     }
     
@@ -123,7 +134,7 @@ public class EventosController
         Optional<Evento> result =  eventosService.getEvento(id);
 
         if(result.isPresent()){
-            ResponseWrapper<Evento> response = new ResponseWrapper<Evento>(result.get());
+            ResponseWrapper<Evento> response = ResponseWrapper.of(result.get());
             return ResponseEntity.ok(response);
         }
         else{
@@ -151,11 +162,28 @@ public class EventosController
         Usuario usuario = Usuario.of(userJWT.get()).get();
     
         if(usuario.tipoUsuario() != TipoUsuario.ORGANIZADOR)
-            return ResponseEntity.status(401).build(); // TODO: mensagens de erro custo
+            return ResponseEntity.status(403).build(); 
 
-        boolean result = eventosService.addAtualizacaoEvento(id, usuario, titulo, texto);
+
+        boolean result;
+        
+        try{
+            result = eventosService.addAtualizacaoEvento(id, usuario, titulo, texto);
+        }
+        catch(IllegalArgumentException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
+        catch(ResourceNotFoundException ex){
+            System.err.println(ex);
+            return ResponseEntity.notFound().build();               
+        }        
+        catch(ForbiddenAccessException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(403).build();
+        }
     
-        ResponseWrapper<Boolean> response = new ResponseWrapper<Boolean>(result);
+        ResponseWrapper<Boolean> response = ResponseWrapper.of(result);
         return ResponseEntity.ok(response);
     }
 }

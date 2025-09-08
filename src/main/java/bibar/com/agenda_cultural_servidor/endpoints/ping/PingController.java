@@ -27,7 +27,7 @@ public class PingController
     {
         String result = pingService.ping();
         
-        ResponseWrapper<String> response = new ResponseWrapper<String>(result);
+        ResponseWrapper<String> response = ResponseWrapper.of(result);
         return ResponseEntity.ok(response);
     }
 }
