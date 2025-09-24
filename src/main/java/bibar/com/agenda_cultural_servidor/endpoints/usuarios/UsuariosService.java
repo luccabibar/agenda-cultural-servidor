@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioAutenticado;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceAlreadyExistsException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
@@ -53,7 +54,7 @@ public class UsuariosService
     }
 
 
-    public String login(String email, String senha) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException
+    public UsuarioAutenticado login(String email, String senha) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException
     {
         if(!isEmailValid(email))
             throw new IllegalArgumentException("UsuariosService: um dos parametros enviados é considerado invalido");
@@ -87,7 +88,11 @@ public class UsuariosService
         if(authToken.isEmpty())
             throw new RuntimeException("UsuariosService: impossivel encriptar dados do usuario " + usuario.get());
 
-        return authToken.get();
+
+        // gera usuario autenticado e retorna
+        UsuarioAutenticado response = UsuarioAutenticado.of(usuario.get(), authToken.get());
+
+        return response;
     }
 
 

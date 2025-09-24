@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioAutenticado;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceAlreadyExistsException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
@@ -27,13 +28,13 @@ public class UsuariosController
 
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseWrapper<String>> login(
+    public ResponseEntity<ResponseWrapper<UsuarioAutenticado>> login(
         @Valid @RequestBody LoginRequestBody body
     ) {
         String email = body.email();
         String senha = body.senha();
          
-        String result;
+        UsuarioAutenticado result;
         
         try{
             result = usuariosService.login(email, senha);
@@ -52,7 +53,7 @@ public class UsuariosController
         }
         
 
-        ResponseWrapper<String> response = ResponseWrapper.of(result);
+        ResponseWrapper<UsuarioAutenticado> response = ResponseWrapper.of(result);
         return ResponseEntity.ok(response);
     }
 

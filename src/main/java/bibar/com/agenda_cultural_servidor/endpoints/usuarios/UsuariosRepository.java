@@ -85,7 +85,9 @@ public class UsuariosRepository
                 us.id AS id,
                 pes.id AS pes_id,
                 org.id AS org_id,
-                mdr.id AS mdr_id
+                mdr.id AS mdr_id,
+                us.email AS email,
+                us.nome AS nome
             FROM
                 usuario AS us
             LEFT JOIN 
@@ -116,7 +118,6 @@ public class UsuariosRepository
 
         Map<String, Object> result = resList.get(0);
         
-        Integer id = (Integer) result.get("id");
         TipoUsuario tipo;
 
         // id pessoa presente; usuario eh pessoa
@@ -135,7 +136,15 @@ public class UsuariosRepository
         else
             return Optional.empty();
 
-        Usuario response = new Usuario(id, tipo);
+        
+        // monta usuario e retorna
+        Usuario response = new Usuario(
+            (Integer) result.get("id"), 
+            (String) result.get("email"), 
+            (String) result.get("nome"), 
+            tipo
+        );
+
         return Optional.of(response);
     }
 
