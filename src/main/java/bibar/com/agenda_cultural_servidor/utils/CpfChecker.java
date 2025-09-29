@@ -59,7 +59,7 @@ public class CpfChecker
             cnpj = limpaCpfCnpj(cnpj);
 
         // formato
-        if (cnpj.length() != 11 || !cnpj.matches("[\\d]+"))
+        if (cnpj.length() != 14 || !cnpj.matches("[\\d]+"))
             return false;
         
         // string -> array

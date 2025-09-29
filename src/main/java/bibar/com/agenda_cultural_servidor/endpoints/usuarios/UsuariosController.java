@@ -1,5 +1,7 @@
 package bibar.com.agenda_cultural_servidor.endpoints.usuarios;
 
+import java.security.NoSuchAlgorithmException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,9 +41,9 @@ public class UsuariosController
         try{
             result = usuariosService.login(email, senha);
         }
-        catch(IllegalArgumentException ex){
+        catch(NoSuchAlgorithmException ex){
             System.err.println(ex);
-            return ResponseEntity.status(409).build();
+            return ResponseEntity.status(500).build();
         }
         catch(ResourceNotFoundException ex){
             System.err.println(ex);
@@ -78,7 +80,7 @@ public class UsuariosController
         }
         catch(ResourceAlreadyExistsException ex){
             System.err.println(ex);
-            return ResponseEntity.status(409).build();
+            return ResponseEntity.status(403).build();
         }
 
         ResponseWrapper<Boolean> response = ResponseWrapper.of(result);
@@ -107,7 +109,7 @@ public class UsuariosController
         }
         catch(ResourceAlreadyExistsException ex){
             System.err.println(ex);
-            return ResponseEntity.status(409).build();
+            return ResponseEntity.status(403).build();
         }
 
 

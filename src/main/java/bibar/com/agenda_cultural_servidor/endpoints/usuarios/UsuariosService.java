@@ -54,7 +54,7 @@ public class UsuariosService
     }
 
 
-    public UsuarioAutenticado login(String email, String senha) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException
+    public UsuarioAutenticado login(String email, String senha) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException, NoSuchAlgorithmException
     {
         if(!isEmailValid(email))
             throw new IllegalArgumentException("UsuariosService: um dos parametros enviados é considerado invalido");
@@ -72,7 +72,7 @@ public class UsuariosService
         }
         catch(NoSuchAlgorithmException ex){
             System.err.println(ex.toString());
-            throw new IllegalArgumentException(ex);
+            throw ex;
         }
 
         //  pega dados do usuario  
