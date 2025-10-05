@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
-import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
 import bibar.com.agenda_cultural_servidor.records.JWTUser;
@@ -86,7 +86,7 @@ public class EventosController
         if (userJWT.isEmpty())
             return ResponseEntity.status(401).build();
 
-        Usuario usuario = Usuario.of(userJWT.get()).get();
+        UsuarioInterface usuario = UsuarioInterface.of(userJWT.get()).get();
 
         if(usuario.tipoUsuario() != TipoUsuario.ORGANIZADOR)
             return ResponseEntity.status(403).build(); 
@@ -159,8 +159,8 @@ public class EventosController
         if (userJWT.isEmpty())
             return ResponseEntity.status(401).build();
 
-        Usuario usuario = Usuario.of(userJWT.get()).get();
-    
+        UsuarioInterface usuario = UsuarioInterface.of(userJWT.get()).get();
+
         if(usuario.tipoUsuario() != TipoUsuario.ORGANIZADOR)
             return ResponseEntity.status(403).build(); 
 

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.StatusEvento;
-import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
 
@@ -111,7 +111,7 @@ public class EventosService
 
 
     public boolean criaEvento(
-        Usuario usuario,
+        UsuarioInterface usuario,
         String nome,
         String descricao,
         String categoria,
@@ -166,7 +166,7 @@ public class EventosService
 
     public boolean addAtualizacaoEvento(
         Integer idEvento,
-        Usuario organizador,
+        UsuarioInterface organizador,
         String titulo,
         String texto
     ) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException

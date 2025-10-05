@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioAutenticado;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceAlreadyExistsException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
@@ -76,7 +76,7 @@ public class UsuariosService
         }
 
         //  pega dados do usuario  
-        Optional<Usuario> usuario = usuariosRepository.autenticaUsuario(email, senha);
+        Optional<UsuarioInterface> usuario = usuariosRepository.autenticaUsuario(email, senha);
 
         // se nao encontrou dados
         if(usuario.isEmpty())

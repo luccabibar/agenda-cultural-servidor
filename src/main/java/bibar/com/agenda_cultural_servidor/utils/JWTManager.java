@@ -11,7 +11,7 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
-import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Usuario;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.records.JWTUser;
 
 @Service
@@ -79,7 +79,7 @@ public class JWTManager
     }
 
 
-    public Optional<String> encrypt(Usuario target)
+    public Optional<String> encrypt(UsuarioInterface target)
     {
         // altenrativa de implementacao: criar um JWTUser e preencher seus dados do zero, a fim de controlar o iat
         Optional<JWTUser> user = JWTUser.of(target);
