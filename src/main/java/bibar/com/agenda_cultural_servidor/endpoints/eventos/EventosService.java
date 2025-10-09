@@ -20,12 +20,17 @@ import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
 @Service
 public class EventosService
 {
+    private DateTimeFormatter dateFormatter, timeFormatter, dateTimeFormatter;
     private EventosRepository eventosRepository;
 
     public EventosService (
         EventosRepository eventosRepositoryInj
     ) {
         eventosRepository = eventosRepositoryInj;
+
+        dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE;           // yyyy-MM-dd
+        timeFormatter = DateTimeFormatter.ISO_LOCAL_TIME;           // HH:mm:ss
+        dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;  // yyyy-MM-ddTHH:mm:ss
     }
 
 
@@ -55,15 +60,11 @@ public class EventosService
         LocalDate diaUpper, diaLower;
         
         // prepara dados emdata e hora
-        try {
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-            
+        try {            
             diaUpper = (diaUpperStr != null) ? LocalDate.parse(diaUpperStr, dateFormatter) : null;
             diaLower = (diaLowerStr != null) ? LocalDate.parse(diaLowerStr, dateFormatter) : null;
             horaUpper = (horaUpperStr != null) ? LocalTime.parse(horaUpperStr, timeFormatter) : null;
             horaLower = (horaLowerStr != null) ? LocalTime.parse(horaLowerStr, timeFormatter) : null;
-
         }
         catch(DateTimeParseException ex){
             System.err.println("EventosService: " + ex);
@@ -110,7 +111,7 @@ public class EventosService
     }
 
 
-    public boolean criaEvento(
+    public int criaEvento(
         UsuarioInterface usuario,
         String nome,
         String descricao,
@@ -127,8 +128,8 @@ public class EventosService
         LocalDateTime horaIni, horaFim;
         
         try{
-            horaIni = LocalDateTime.parse(horaIniStr);          
-            horaFim = LocalDateTime.parse(horaFimStr);
+            horaIni = LocalDateTime.parse(horaIniStr, dateTimeFormatter);          
+            horaFim = LocalDateTime.parse(horaFimStr, dateTimeFormatter);
         }
         catch(DateTimeParseException ex){
             System.out.println(ex.toString());
@@ -160,7 +161,24 @@ public class EventosService
             "\"null\"" // link endereco
         );
 
-        return res;
+        if(!res)
+            return 0;
+
+        // busca evento que acabou de ser criado
+        List<Evento> eventos = buscar(
+            nome, 
+            categoria, 
+            horaIni.format(dateFormatter), // busca <= data && busca >= data 
+            horaIni.format(dateFormatter), 
+            horaIni.format(timeFormatter), 
+            horaIni.format(timeFormatter), 
+            regiao
+        );
+
+        if(!eventos.isEmpty())
+            return eventos.getFirst().id();
+        else
+            return 0;
     }
 
 

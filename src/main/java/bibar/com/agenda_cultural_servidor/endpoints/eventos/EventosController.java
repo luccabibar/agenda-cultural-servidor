@@ -67,7 +67,7 @@ public class EventosController
     
 
     @PostMapping
-    public ResponseEntity<ResponseWrapper<Boolean>> criaEvento(
+    public ResponseEntity<ResponseWrapper<Integer>> criaEvento(
         @Valid @RequestBody PostEventoRequestBody body,
         @RequestHeader(name = "Authorization") String authHeader
     ) {
@@ -92,7 +92,7 @@ public class EventosController
             return ResponseEntity.status(403).build(); 
         
             
-        boolean result;
+        int result;
 
         try{
             result = eventosService.criaEvento(
@@ -112,8 +112,9 @@ public class EventosController
             return ResponseEntity.status(409).build();
         }
         
-        ResponseWrapper<Boolean> response = ResponseWrapper.of(result);
-        return ResponseEntity.ok(response);
+        ResponseWrapper<Integer> response = ResponseWrapper.of(result);
+        // return ResponseEntity.created(201); // nao sera implementado desta forma pois nao trabalhamos com URI 
+        return ResponseEntity.status(201).body(response); 
     }
     
 

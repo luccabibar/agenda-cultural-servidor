@@ -58,9 +58,12 @@ public class AutenticacaoFilter extends OncePerRequestFilter
         String authHeader = request.getHeader("Authorization");
         Optional<String> token = JWTManager.getTokenFromHeader(authHeader);
 
-        // executa request se token for valdia
+        // passa pro proximo filtro se token for valdia
         if(token.isPresent() && JWTMan.isTokenValid(token.get()))
             chain.doFilter(request, response);
+        // set erro, nao passa pro proximo filtro
+        else
+            response.sendError(401, "Authorization: token nao e valido");
     }
 
 

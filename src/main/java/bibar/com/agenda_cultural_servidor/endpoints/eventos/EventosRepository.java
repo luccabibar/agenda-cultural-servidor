@@ -75,7 +75,7 @@ public class EventosRepository
         """;
         
         for(int ii = 0; ii < params.size(); ii++)
-            whereClause += "AND " + params.get(ii).condicao(); // SE ATENTAR se ha WHERE antes ou nao
+            whereClause += "AND " + params.get(ii).condicao() + " "; // SE ATENTAR se ha WHERE antes ou nao
         
         whereClause += ";";
 
