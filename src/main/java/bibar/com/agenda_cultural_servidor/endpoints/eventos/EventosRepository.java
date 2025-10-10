@@ -39,11 +39,14 @@ public class EventosRepository
         Optional<LocalDate> diaLower,
         Optional<LocalTime> horaUpper,
         Optional<LocalTime> horaLower,
-        Optional<String> regiao
+        Optional<String> regiao,
+        Optional<Integer> organizadorId,
+        Optional<StatusEvento> status
     ) {
         String query = """
             SELECT
-                ev.id, ev.nome, ev.descricao, ev.categoria,
+                ev.id, ev.status, 
+                ev.nome, ev.descricao, ev.categoria,
                 ev.hora_ini, ev.regiao,
                 us.nome AS us_nome
             FROM evento AS ev
@@ -64,15 +67,17 @@ public class EventosRepository
             diaLower,
             horaUpper,
             horaLower,
-            regiao
+            regiao,
+            organizadorId,
+            status
         );
         
         // monta where clause
         String whereClause = """
             WHERE
-                ev.status = :status
-            
-        """;
+                1 = 1
+
+        """; // macete veio para garantir que ha sempre, ao menos, uma condicao no where (torna adicionar as seguintes mais facil)
         
         for(int ii = 0; ii < params.size(); ii++)
             whereClause += "AND " + params.get(ii).condicao() + " "; // SE ATENTAR se ha WHERE antes ou nao
@@ -86,8 +91,6 @@ public class EventosRepository
                 ParamBusca::nome,
                 ParamBusca::value
             ));
-
-        paramMap.put("status", StatusEvento.APROVADO.valor);
 
         // realiza query
         List<Map<String, Object>> resList = jdbcClient
@@ -109,7 +112,7 @@ public class EventosRepository
 
             Evento evento = new Evento(
                 (Integer) resRow.get("id"),
-                null,
+                (StatusEvento) StatusEvento.fromString((String) resRow.get("status")),
     
                 (String) resRow.get("nome"),
                 (String) resRow.get("descricao"),
@@ -144,7 +147,9 @@ public class EventosRepository
         Optional<LocalDate> diaLower,
         Optional<LocalTime> horaUpper,
         Optional<LocalTime> horaLower,
-        Optional<String> regiao
+        Optional<String> regiao,
+        Optional<Integer> organizador,
+        Optional<StatusEvento> status
     ) {
         List<ParamBusca> params = new ArrayList<ParamBusca>();
 
@@ -200,6 +205,20 @@ public class EventosRepository
                 regiao.get(), 
                 "regiao", 
                 "UPPER(ev.regiao) = UPPER(:regiao)"
+            ));
+        
+        if(organizador.isPresent())
+            params.add(new ParamBusca(
+                organizador.get(), 
+                "organizador", 
+                "ev.organizador = :organizador"
+            ));
+
+        if(status.isPresent())
+            params.add(new ParamBusca(
+                status.get().valor, 
+                "status", 
+                "ev.status = :status"
             ));
 
         return params;

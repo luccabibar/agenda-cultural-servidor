@@ -54,8 +54,11 @@ public class EventosService
         String diaLowerStr,
         String horaUpperStr,
         String horaLowerStr,
-        String regiao
+        String regiao,
+        Integer organizador,
+        String statusStr
     ) {
+        StatusEvento status;
         LocalTime horaUpper, horaLower;
         LocalDate diaUpper, diaLower;
         
@@ -75,6 +78,15 @@ public class EventosService
             horaLower = null;
         }
 
+        try {
+            status = StatusEvento.valueOf(statusStr);
+        }
+        catch(Exception ex){            
+            System.err.println("EventosService: " + ex);
+
+            status = null;
+        }
+
         // converte em optionals
         List<Evento> res = eventosRepository.buscarEventos(
             Optional.ofNullable(texto),
@@ -83,7 +95,9 @@ public class EventosService
             Optional.ofNullable(diaLower),
             Optional.ofNullable(horaUpper),
             Optional.ofNullable(horaLower),
-            Optional.ofNullable(regiao)
+            Optional.ofNullable(regiao),
+            Optional.ofNullable(organizador),
+            Optional.ofNullable(status)
         );
 
         return res;
@@ -172,7 +186,9 @@ public class EventosService
             horaIni.format(dateFormatter), 
             horaIni.format(timeFormatter), 
             horaIni.format(timeFormatter), 
-            regiao
+            regiao,
+            usuario.id(),
+            null
         );
 
         if(!eventos.isEmpty())

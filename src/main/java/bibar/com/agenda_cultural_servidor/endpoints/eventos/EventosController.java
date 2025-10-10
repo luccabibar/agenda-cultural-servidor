@@ -49,7 +49,9 @@ public class EventosController
         @RequestParam(required = false) String diaLower,
         @RequestParam(required = false) String horaUpper,
         @RequestParam(required = false) String horaLower,
-        @RequestParam(required = false) String regiao
+        @RequestParam(required = false) String regiao,
+        @RequestParam(required = false) Integer organizador,
+        @RequestParam(required = false) String status
     ) {
         List<Evento> result = eventosService.buscar(
             texto,
@@ -58,7 +60,9 @@ public class EventosController
             diaLower,
             horaUpper,
             horaLower,
-            regiao
+            regiao,
+            organizador,
+            status
         );
 
         ResponseWrapper<List<Evento>> response = ResponseWrapper.of(result); 
