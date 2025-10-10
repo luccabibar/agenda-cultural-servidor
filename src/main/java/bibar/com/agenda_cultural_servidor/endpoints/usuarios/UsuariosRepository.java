@@ -80,6 +80,92 @@ public class UsuariosRepository
     }
 
 
+    public Optional<Pessoa> getPessoa(int id)
+    {
+        String query = """
+            SELECT
+                ps.id AS id,
+                us.nome AS nome,
+                us.email AS email,
+                (SELECT 'PESSOA') AS tipoUsuario
+            FROM
+                pessoa AS ps
+            JOIN 
+                usuario AS us
+                ON us.id = ps.id
+            WHERE
+                ps.id = :id
+            ;
+        """;
+
+        Optional<Pessoa> response =  jdbcClient
+            .sql(query)
+            .param("id", id)
+            .query(Pessoa.class)
+            .optional();
+
+        return response;
+    }
+
+
+    public Optional<Organizador> getOrganizador(int id)
+    {
+        String query = """
+            SELECT
+                og.id AS id,
+                us.nome AS nome,
+                us.email AS email,
+                og.cpf_cnpj AS cpf,
+                (SELECT 'ORGANIZADOR') AS tipoUsuario
+            FROM
+                organizador AS og
+            JOIN 
+                usuario AS us
+                ON us.id = og.id
+            WHERE
+                og.id = :id
+            ;
+        """;
+        
+        Optional<Organizador> response =  jdbcClient
+            .sql(query)
+            .param("id", id)
+            .query(Organizador.class)
+            .optional();
+
+        return response;
+    }
+
+
+    public Optional<Moderador> getModerador(int id)
+    {
+        String query = """
+            SELECT
+                md.id AS id,
+                us.nome AS nome,
+                us.email AS email,
+                md.cpf_cnpj AS cpf,
+                (SELECT 'MODERADOR') AS tipoUsuario
+            FROM
+                moderador AS md
+            JOIN 
+                usuario AS us
+                ON us.id = md.id
+            WHERE
+                md.id = :id
+            ;
+        """;
+
+        Optional<Moderador> response =  jdbcClient
+            .sql(query)
+            .param("id", id)
+            .query(Moderador.class)
+            .optional();
+
+        return response;
+    }
+
+
     public Optional<UsuarioInterface> autenticaUsuario(String email, String senha)
     {
         String query = """

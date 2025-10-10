@@ -1,18 +1,28 @@
 package bibar.com.agenda_cultural_servidor.endpoints.usuarios;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Moderador;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Organizador;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Pessoa;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioAutenticado;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceAlreadyExistsException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
+import bibar.com.agenda_cultural_servidor.records.JWTUser;
 import bibar.com.agenda_cultural_servidor.records.ResponseWrapper;
+import bibar.com.agenda_cultural_servidor.records.TipoUsuario;
+import bibar.com.agenda_cultural_servidor.utils.JWTManager;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
@@ -20,11 +30,14 @@ import jakarta.validation.constraints.NotBlank;
 @RequestMapping("/usuarios")
 public class UsuariosController
 {
+    private JWTManager JWTMan;
     private UsuariosService usuariosService;
 
     public UsuariosController(
+        JWTManager JWTManInj,
         UsuariosService usuariosServiceInj
     ) {
+        JWTMan = JWTManInj;
         usuariosService = usuariosServiceInj;
     }
 
@@ -58,6 +71,55 @@ public class UsuariosController
         ResponseWrapper<UsuarioAutenticado> response = ResponseWrapper.of(result);
         return ResponseEntity.ok(response);
     }
+
+
+    @GetMapping("/self")
+    public ResponseEntity<ResponseWrapper<UsuarioInterface>> getSelf(
+        @RequestHeader(name = "Authorization") String authHeader
+    ) {
+        // pega user
+        Optional<JWTUser> userJWT = JWTMan.fullDecryptFromHeader(authHeader);
+        
+        if (userJWT.isEmpty())
+            return ResponseEntity.status(401).build();
+
+
+        Optional<UsuarioInterface> usuario = Optional.empty();
+
+        switch (userJWT.get().role()) {
+        case TipoUsuario.PESSOA:
+
+            Optional<Pessoa> pessoa = usuariosService.getPessoa(userJWT.get().sub());
+            if(pessoa.isPresent())
+                usuario = Optional.of(pessoa.get()); // tontera
+
+            break;
+        
+        case TipoUsuario.ORGANIZADOR:
+        
+            Optional<Organizador> organizador = usuariosService.getOrganizador(userJWT.get().sub());
+            if(organizador.isPresent())
+                usuario = Optional.of(organizador.get()); // tontera
+
+            break;
+
+        case TipoUsuario.MODERADOR:
+        
+            Optional<Moderador> moderador = usuariosService.getModerador(userJWT.get().sub());
+            if(moderador.isPresent())
+                usuario = Optional.of(moderador.get()); // tontera
+
+            break;
+        }
+
+        if(usuario.isEmpty()){
+            return ResponseEntity.status(404).build();
+        }
+        else{
+            ResponseWrapper<UsuarioInterface> response = ResponseWrapper.of(usuario.get());
+            return ResponseEntity.ok(response);
+        }
+    }   
 
 
     @PostMapping("/pessoas")

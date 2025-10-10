@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Moderador;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Organizador;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Pessoa;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioAutenticado;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
@@ -93,6 +96,30 @@ public class UsuariosService
         UsuarioAutenticado response = UsuarioAutenticado.of(usuario.get(), authToken.get());
 
         return response;
+    }
+
+
+    public Optional<Pessoa> getPessoa(int id)
+    {
+        Optional<Pessoa> res = usuariosRepository.getPessoa(id);
+
+        return res;
+    }
+
+
+    public Optional<Organizador> getOrganizador(int id)
+    {
+        Optional<Organizador> res = usuariosRepository.getOrganizador(id);
+
+        return res;
+    }
+
+
+    public Optional<Moderador> getModerador(int id)
+    {
+        Optional<Moderador> res = usuariosRepository.getModerador(id);
+
+        return res;
     }
 
 
