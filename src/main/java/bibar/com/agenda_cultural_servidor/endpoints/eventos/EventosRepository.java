@@ -277,9 +277,9 @@ public class EventosRepository
         // faz query
         String query = """
             SELECT
-                ev.nome, ev.descricao, ev.categoria, ev.contato,
+                ev.nome, ev.id, ev.status, ev.descricao, ev.categoria, ev.contato,
                 ev.hora_ini, ev.hora_fim, ev.regiao, ev.endereco, ev.endereco_link,
-                us.nome AS us_nome,
+                og.id AS og_id, us.nome AS og_nome,
                 att.titulo AS att_titulo, att.texto AS att_texto
             FROM evento AS ev
             JOIN organizador AS og
@@ -313,9 +313,9 @@ public class EventosRepository
         Map<String, Object> resRow = resList.get(0);
 
         Organizador organizador = new Organizador(
+            (Integer) resRow.get("og_id"),
             null,
-            null,
-            (String) resRow.get("us_nome"),
+            (String) resRow.get("og_nome"),
             null            
         );
 
@@ -338,8 +338,8 @@ public class EventosRepository
         }
 
         Evento evento = new Evento(
-            null,
-            null,
+            (Integer) resRow.get("id"),
+            (StatusEvento) StatusEvento.fromString((String) resRow.get("status")),
 
             (String) resRow.get("nome"),
             (String) resRow.get("descricao"),
