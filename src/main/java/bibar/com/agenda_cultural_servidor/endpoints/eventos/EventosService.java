@@ -43,6 +43,11 @@ public class EventosService
     private boolean isEnderecoEventoValid(String endereco) { return endereco != null && endereco.length() <= 64; }
     private boolean isIdEventoValid(Integer id) { return id != null && id > 0; }
 
+    private boolean isHorasValid(LocalDateTime horaIni, LocalDateTime horaFim)
+    {
+        return horaFim != null && horaIni != null && horaIni.isBefore(horaFim) && LocalDateTime.now().isBefore(horaIni);
+    }
+
     private boolean isTituloAttValid(String titulo) { return titulo != null && titulo.length() <= 24; }
     private boolean isTextoAttValid(String texto) { return texto != null && texto.length() <= 256; }
 
@@ -157,6 +162,7 @@ public class EventosService
             || !isContatoEventoValid(contato)
             || !isRegiaoEventoValid(regiao)
             || !isEnderecoEventoValid(endereco)
+            || !isHorasValid(horaIni, horaFim)
         )
             throw new IllegalArgumentException("EventosService: um dos parametros enviados é considerado invalido");
             
@@ -195,6 +201,84 @@ public class EventosService
             return eventos.getFirst().id();
         else
             return 0;
+    }
+
+
+    public boolean editaEvento(
+        int idEvento,
+        UsuarioInterface organizador,
+        String descricao,
+        String contato,
+        String horaIniStr,
+        String horaFimStr,
+        String regiao,
+        String endereco
+    ) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException 
+    {
+        // busca evento que vai ser editado
+        Optional<Evento> evento = getEvento(idEvento);
+
+        if(evento.isEmpty())
+            throw new ResourceNotFoundException("EventosService: evento a ser editado nao pode ser encontrado. id: " + idEvento);
+        
+        if(evento.get().organizador().id() != organizador.id())
+            throw new ForbiddenAccessException("EventosService: usuario nao tem acesso a esse recurso");
+
+ 
+        // prepara parametros
+        LocalDateTime horaIni, horaFim;
+
+        // prepara dados emdata e hora
+        try {            
+            horaFim = (horaFimStr != null) ? LocalDateTime.parse(horaFimStr, dateTimeFormatter) : null;
+        }
+        catch(DateTimeParseException ex){
+            throw new IllegalArgumentException("EventosService: um dos parametros enviados é considerado invalido" + ex);
+        }
+        
+        try {            
+            horaIni = (horaIniStr != null) ? LocalDateTime.parse(horaIniStr, dateTimeFormatter) : null;
+        }
+        catch(DateTimeParseException ex){
+            throw new IllegalArgumentException("EventosService: um dos parametros enviados é considerado invalido" + ex);
+        }
+
+        // validacao das horas sao um pouco mais chatas
+        Boolean horasValida;
+
+        if(horaIni == null && horaFim == null)
+            horasValida = true;
+        else if(horaIni == null && horaFim != null)
+            horasValida = isHorasValid(evento.get().horarioInicio(), horaFim); 
+        else if(horaIni != null && horaFim == null)
+            horasValida = isHorasValid(horaIni, evento.get().horarioFim());
+        else
+            horasValida = isHorasValid(horaIni, horaFim);
+
+        // para cada item: deve ser null OU invalido
+        if(
+            (descricao != null && !isDescricaoEventoValid(descricao))
+            || (contato != null && !isContatoEventoValid(contato))
+            || (regiao != null && !isRegiaoEventoValid(regiao))
+            || (endereco != null && !isEnderecoEventoValid(endereco))
+            || !horasValida
+        )
+            throw new IllegalArgumentException("EventosService: um dos parametros enviados é considerado invalido");
+            
+
+        boolean res = eventosRepository.patchEvento(
+            idEvento,
+            organizador.id(),
+            Optional.empty(),
+            Optional.ofNullable(descricao),
+            Optional.ofNullable(contato),
+            Optional.ofNullable(horaIni),
+            Optional.ofNullable(horaFim),
+            Optional.ofNullable(regiao),
+            Optional.ofNullable(endereco)
+        );
+
+        return res;
     }
 
 

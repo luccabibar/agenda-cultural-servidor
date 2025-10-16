@@ -60,7 +60,7 @@ public class EventosRepository
         """;
 
         // prepara params
-        List<ParamBusca> params = preparaParamsBuscar(
+        List<Declaracao> params = preparaParamsBuscar(
             texto,
             categoria,
             diaUpper,
@@ -80,7 +80,7 @@ public class EventosRepository
         """; // macete veio para garantir que ha sempre, ao menos, uma condicao no where (torna adicionar as seguintes mais facil)
         
         for(int ii = 0; ii < params.size(); ii++)
-            whereClause += "AND " + params.get(ii).condicao() + " "; // SE ATENTAR se ha WHERE antes ou nao
+            whereClause += "AND " + params.get(ii).declaracao() + " "; // SE ATENTAR se ha WHERE antes ou nao
         
         whereClause += ";";
 
@@ -88,8 +88,8 @@ public class EventosRepository
         Map<String, Object> paramMap = params
             .stream()    
             .collect(Collectors.toMap(
-                ParamBusca::nome,
-                ParamBusca::value
+                Declaracao::nome,
+                Declaracao::value
             ));
 
         // realiza query
@@ -140,7 +140,7 @@ public class EventosRepository
     }
 
 
-    private List<ParamBusca> preparaParamsBuscar(
+    private List<Declaracao> preparaParamsBuscar(
         Optional<String> texto,
         Optional<String> categoria,
         Optional<LocalDate> diaUpper,
@@ -151,10 +151,10 @@ public class EventosRepository
         Optional<Integer> organizador,
         Optional<StatusEvento> status
     ) {
-        List<ParamBusca> params = new ArrayList<ParamBusca>();
+        List<Declaracao> params = new ArrayList<Declaracao>();
 
         if(texto.isPresent())
-            params.add(new ParamBusca(
+            params.add(new Declaracao(
                 texto.get(), 
                 "texto", 
                 """
@@ -166,56 +166,56 @@ public class EventosRepository
             ));
 
         if(categoria.isPresent())
-            params.add(new ParamBusca(
+            params.add(new Declaracao(
                 categoria.get(), 
                 "categoria", 
                 "UPPER(ev.categoria) = UPPER(:categoria)"
             ));
 
         if(diaUpper.isPresent())
-            params.add(new ParamBusca(
+            params.add(new Declaracao(
                 diaUpper.get(), 
                 "diaUpper", 
                 "CAST(ev.hora_ini AS DATE) <= :diaUpper"
             ));
 
         if(diaLower.isPresent())
-            params.add(new ParamBusca(
+            params.add(new Declaracao(
                 diaLower.get(), 
                 "diaLower", 
                 "CAST(ev.hora_ini AS DATE) >= :diaLower"
             ));
 
         if(horaUpper.isPresent())
-            params.add(new ParamBusca(
+            params.add(new Declaracao(
                 horaUpper.get(), 
                 "horaUpper", 
                 "CAST(ev.hora_ini AS TIME) <= :horaUpper"
             ));
 
         if(horaLower.isPresent())
-            params.add(new ParamBusca(
+            params.add(new Declaracao(
                 horaLower.get(), 
                 "horaLower", 
                 "CAST(ev.hora_ini AS TIME) >= :horaLower"
             ));
 
         if(regiao.isPresent())
-            params.add(new ParamBusca(
+            params.add(new Declaracao(
                 regiao.get(), 
                 "regiao", 
                 "UPPER(ev.regiao) = UPPER(:regiao)"
             ));
         
         if(organizador.isPresent())
-            params.add(new ParamBusca(
+            params.add(new Declaracao(
                 organizador.get(), 
                 "organizador", 
                 "ev.organizador = :organizador"
             ));
 
         if(status.isPresent())
-            params.add(new ParamBusca(
+            params.add(new Declaracao(
                 status.get().valor, 
                 "status", 
                 "ev.status = :status"
@@ -425,6 +425,153 @@ public class EventosRepository
     }
 
 
+    public boolean patchEvento(
+            int idEvento,
+            int idOrganizador,
+            Optional<StatusEvento> status,
+            Optional<String> descricao,
+            Optional<String> contato,
+            Optional<LocalDateTime> horaIni,
+            Optional<LocalDateTime> horaFim,
+            Optional<String> regiao,
+            Optional<String> endereco
+    ) {        
+        String query = """
+            UPDATE evento 
+        """;
+
+        String whereClause = """
+            WHERE
+                id = :id
+                AND organizador = :organizador
+            ;
+        """;
+
+        // prepara params
+        List<Declaracao> params = preparaParamsPatch(
+            status,
+            descricao,
+            contato,
+            horaIni,
+            horaFim,
+            regiao,
+            endereco
+        );
+
+        
+        // monta set clause
+        String setClause = """
+            SET 
+        """;
+        
+        for(int ii = 0; ii < params.size(); ii++){
+            if(ii == 0)
+                setClause += params.get(ii).declaracao() + " ";
+            else
+                setClause += ", " + params.get(ii).declaracao() + " ";
+        }
+
+        // transforma o objeto estruturado em pares K V (conforme especificado pelo jdbc)
+        Map<String, Object> paramMap = params
+            .stream()    
+            .collect(Collectors.toMap(
+                Declaracao::nome,
+                Declaracao::value
+            ));
+
+        // parametros adicionais
+        paramMap.put("id", idEvento);
+        paramMap.put("organizador", idOrganizador);
+
+        int res = 0;
+        
+        StatementSpec stSpec = jdbcClient
+            .sql(query + setClause + whereClause)
+            .params(paramMap);
+
+        try{
+            res = stSpec.update();
+        }
+        catch(DataIntegrityViolationException ex){
+            System.err.println(ex);
+            res = 0;
+        }
+            
+        return res == 1;
+    }
+
+
+    public List<Declaracao> preparaParamsPatch(
+        Optional<StatusEvento> status,
+        Optional<String> descricao,
+        Optional<String> contato,
+        Optional<LocalDateTime> horaIni,
+        Optional<LocalDateTime> horaFim,
+        Optional<String> regiao,
+        Optional<String> endereco
+    ) {
+        List<Declaracao> params = new ArrayList<Declaracao>();
+        
+        if(status.isPresent())
+            params.add(new Declaracao(
+                status.get().valor, 
+                "status",
+                "status = :status"
+            ));
+        
+        
+        if(descricao.isPresent())
+            params.add(new Declaracao(
+                descricao.get(), 
+                "descricao",
+                "descricao = :descricao"
+            ));
+        
+        
+        if(contato.isPresent())
+            params.add(new Declaracao(
+                contato.get(), 
+                "contato",
+                "contato = :contato"
+            ));
+        
+        
+        if(horaIni.isPresent())
+            params.add(new Declaracao(
+                horaIni.get(), 
+                "hora_ini",
+                "hora_ini = :hora_ini"
+            ));
+        
+        
+        if(horaFim.isPresent())
+            params.add(new Declaracao(
+                horaFim.get(), 
+                "hora_fim",
+                "hora_fim = :hora_fim"
+            ));
+        
+        
+        if(regiao.isPresent())
+            params.add(new Declaracao(
+                regiao.get(), 
+                "regiao",
+                "regiao = :regiao"
+            ));
+        
+        
+        if(endereco.isPresent())
+            params.add(new Declaracao(
+                endereco.get(), 
+                "endereco",
+                "endereco = :endereco"
+            ));
+        
+
+        return params;
+    }
+
+
     public boolean addAtualizacaoEvento(
         Integer idEvento,
         Integer idOrganizador,
@@ -470,8 +617,8 @@ public class EventosRepository
 }
 
 
-record ParamBusca (
+record Declaracao (
     Object value,
     String nome,
-    String condicao
+    String declaracao
 ) { }
