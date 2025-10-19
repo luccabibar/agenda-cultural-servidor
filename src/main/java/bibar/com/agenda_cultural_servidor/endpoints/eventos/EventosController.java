@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -180,6 +181,50 @@ public class EventosController
         
         try{
             result = eventosService.editaEvento(id, usuario, descricao, contato, horaIni, horaFim, regiao, endereco);
+        }
+        catch(IllegalArgumentException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
+        catch(ResourceNotFoundException ex){
+            System.err.println(ex);
+            return ResponseEntity.notFound().build();               
+        }        
+        catch(ForbiddenAccessException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(403).build();
+        }
+    
+        ResponseWrapper<Boolean> response = ResponseWrapper.of(result);
+        
+        if(result)
+            return ResponseEntity.ok(response);
+        else
+            return ResponseEntity.status(409).body(response);
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseWrapper<Boolean>> deletaEvento(
+        @PathVariable int id,
+        @RequestHeader(name = "Authorization") String authHeader
+    ) {
+        //pega user
+        Optional<JWTUser> userJWT = JWTMan.fullDecryptFromHeader(authHeader);
+        
+        if (userJWT.isEmpty())
+            return ResponseEntity.status(401).build();
+
+        UsuarioInterface usuario = UsuarioInterface.of(userJWT.get()).get();
+
+        if(usuario.tipoUsuario() != TipoUsuario.ORGANIZADOR)
+            return ResponseEntity.status(403).build(); 
+
+
+        boolean result;
+        
+        try{
+            result = eventosService.deletaEvento(id, usuario);
         }
         catch(IllegalArgumentException ex){
             System.err.println(ex);

@@ -501,6 +501,36 @@ public class EventosRepository
     }
 
 
+    public boolean deleteEvento(
+        int idEvento,
+        int idOrganizador
+    ) {
+        // String query = """
+        //     DELETE FROM evento
+        //     WHERE
+        //         id = :id
+        //         AND organizador = :organizador        
+        // """;
+
+        String query = """
+            UPDATE evento
+            SET status = 'Cancelado'
+            WHERE
+                id = :id
+                AND organizador = :organizador
+                AND status <> 'Cancelado'
+        """;
+
+        int res = jdbcClient
+            .sql(query)
+            .param("id", idEvento)
+            .param("organizador", idOrganizador)
+            .update();
+
+        return res == 1;
+    }
+
+
     public List<Declaracao> preparaParamsPatch(
         Optional<StatusEvento> status,
         Optional<String> descricao,

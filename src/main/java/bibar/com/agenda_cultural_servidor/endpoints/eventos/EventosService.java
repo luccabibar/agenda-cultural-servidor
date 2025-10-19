@@ -204,6 +204,7 @@ public class EventosService
     }
 
 
+    // TODO: evitar de editar se todos os dados forem vazios / iguais
     public boolean editaEvento(
         int idEvento,
         UsuarioInterface organizador,
@@ -277,6 +278,27 @@ public class EventosService
             Optional.ofNullable(regiao),
             Optional.ofNullable(endereco)
         );
+
+        return res;
+    }
+
+
+    public boolean deletaEvento(
+        int idEvento,
+        UsuarioInterface organizador
+    ) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException 
+    {
+        // busca evento que vai ser editado
+        Optional<Evento> evento = getEvento(idEvento);
+
+        if(evento.isEmpty())
+            throw new ResourceNotFoundException("EventosService: evento a ser editado nao pode ser encontrado. id: " + idEvento);
+        
+        if(evento.get().organizador().id() != organizador.id())
+            throw new ForbiddenAccessException("EventosService: usuario nao tem acesso a esse recurso");
+
+ 
+        boolean res = eventosRepository.deleteEvento(idEvento, organizador.id());
 
         return res;
     }
