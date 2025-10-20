@@ -41,7 +41,7 @@ public class EventosRepository
         Optional<LocalTime> horaLower,
         Optional<String> regiao,
         Optional<Integer> organizadorId,
-        Optional<StatusEvento> status
+        List<StatusEvento> status
     ) {
         String query = """
             SELECT
@@ -149,7 +149,7 @@ public class EventosRepository
         Optional<LocalTime> horaLower,
         Optional<String> regiao,
         Optional<Integer> organizador,
-        Optional<StatusEvento> status
+        List<StatusEvento> status
     ) {
         List<Declaracao> params = new ArrayList<Declaracao>();
 
@@ -214,16 +214,18 @@ public class EventosRepository
                 "ev.organizador = :organizador"
             ));
 
-        if(status.isPresent())
+        if(!status.isEmpty())
             params.add(new Declaracao(
-                status.get().valor, 
+                status
+                    .stream()
+                    .map(st -> st.valor)
+                    .collect(Collectors.toList()), 
                 "status", 
-                "ev.status = :status"
+                "ev.status IN (:status)"
             ));
 
         return params;
     }
-
 
 
     public List<String> listRegioes()

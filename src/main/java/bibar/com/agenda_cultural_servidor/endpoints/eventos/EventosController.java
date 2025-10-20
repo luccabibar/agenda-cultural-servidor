@@ -53,8 +53,10 @@ public class EventosController
         @RequestParam(required = false) String horaLower,
         @RequestParam(required = false) String regiao,
         @RequestParam(required = false) Integer organizador,
-        @RequestParam(required = false) String status
+        @RequestParam(required = false) List<String> status
     ) {
+        System.out.println(status);
+
         List<Evento> result = eventosService.buscar(
             texto,
             categoria,

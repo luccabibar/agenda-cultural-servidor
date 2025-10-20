@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,9 +62,9 @@ public class EventosService
         String horaLowerStr,
         String regiao,
         Integer organizador,
-        String statusStr
+        List<String> statusStr
     ) {
-        StatusEvento status;
+        List<StatusEvento> status;
         LocalTime horaUpper, horaLower;
         LocalDate diaUpper, diaLower;
         
@@ -83,13 +84,17 @@ public class EventosService
             horaLower = null;
         }
 
-        try {
-            status = StatusEvento.valueOf(statusStr);
-        }
-        catch(Exception ex){            
-            System.err.println("EventosService: " + ex);
+        status = new ArrayList<StatusEvento>();
 
-            status = null;
+        if(statusStr != null){
+            for (String st : statusStr){
+                try {
+                    status.add(StatusEvento.valueOf(st));
+                }
+                catch(Exception ex){            
+                    System.err.println("EventosService: " + ex);
+                }
+            } 
         }
 
         // converte em optionals
@@ -102,7 +107,7 @@ public class EventosService
             Optional.ofNullable(horaLower),
             Optional.ofNullable(regiao),
             Optional.ofNullable(organizador),
-            Optional.ofNullable(status)
+            status
         );
 
         return res;
