@@ -55,8 +55,6 @@ public class EventosController
         @RequestParam(required = false) Integer organizador,
         @RequestParam(required = false) List<String> status
     ) {
-        System.out.println(status);
-
         List<Evento> result = eventosService.buscar(
             texto,
             categoria,
@@ -227,10 +225,6 @@ public class EventosController
         
         try{
             result = eventosService.deletaEvento(id, usuario);
-        }
-        catch(IllegalArgumentException ex){
-            System.err.println(ex);
-            return ResponseEntity.status(409).build();
         }
         catch(ResourceNotFoundException ex){
             System.err.println(ex);

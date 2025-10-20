@@ -291,7 +291,7 @@ public class EventosService
     public boolean deletaEvento(
         int idEvento,
         UsuarioInterface organizador
-    ) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException 
+    ) throws ResourceNotFoundException, ForbiddenAccessException 
     {
         // busca evento que vai ser editado
         Optional<Evento> evento = getEvento(idEvento);
