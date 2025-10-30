@@ -53,6 +53,7 @@ public class EventosController
         @RequestParam(required = false) String horaLower,
         @RequestParam(required = false) String regiao,
         @RequestParam(required = false) Integer organizador,
+        @RequestParam(required = false) Integer moderador,
         @RequestParam(required = false) List<String> status
     ) {
         List<Evento> result = eventosService.buscar(
@@ -64,6 +65,7 @@ public class EventosController
             horaLower,
             regiao,
             organizador,
+            moderador,
             status
         );
 

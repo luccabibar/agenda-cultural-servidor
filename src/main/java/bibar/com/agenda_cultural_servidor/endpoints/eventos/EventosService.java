@@ -62,6 +62,7 @@ public class EventosService
         String horaLowerStr,
         String regiao,
         Integer organizador,
+        Integer moderador,
         List<String> statusStr
     ) {
         List<StatusEvento> status;
@@ -107,6 +108,7 @@ public class EventosService
             Optional.ofNullable(horaLower),
             Optional.ofNullable(regiao),
             Optional.ofNullable(organizador),
+            Optional.ofNullable(moderador),
             status
         );
 
@@ -199,6 +201,7 @@ public class EventosService
             horaIni.format(timeFormatter), 
             regiao,
             usuario.id(),
+            null,
             null
         );
 

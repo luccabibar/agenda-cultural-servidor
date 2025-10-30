@@ -41,6 +41,7 @@ public class EventosRepository
         Optional<LocalTime> horaLower,
         Optional<String> regiao,
         Optional<Integer> organizadorId,
+        Optional<Integer> moderadorId,
         List<StatusEvento> status
     ) {
         String query = """
@@ -69,6 +70,7 @@ public class EventosRepository
             horaLower,
             regiao,
             organizadorId,
+            moderadorId,
             status
         );
         
@@ -149,6 +151,7 @@ public class EventosRepository
         Optional<LocalTime> horaLower,
         Optional<String> regiao,
         Optional<Integer> organizador,
+        Optional<Integer> moderador,
         List<StatusEvento> status
     ) {
         List<Declaracao> params = new ArrayList<Declaracao>();
@@ -212,6 +215,13 @@ public class EventosRepository
                 organizador.get(), 
                 "organizador", 
                 "ev.organizador = :organizador"
+            ));
+
+        if(moderador.isPresent())
+            params.add(new Declaracao(
+                moderador.get(), 
+                "moderador", 
+                "ev.moderador = :moderador"
             ));
 
         if(!status.isEmpty())
@@ -295,14 +305,12 @@ public class EventosRepository
                 ev.id = att.evento
             WHERE
                 ev.id = :id
-                AND ev.status = :status
             ;        
         """;
 
         List<Map<String, Object>> resList = jdbcClient
             .sql(query)
             .param("id", id)
-            .param("status", StatusEvento.APROVADO.valor)
             .query()
             .listOfRows();
     
