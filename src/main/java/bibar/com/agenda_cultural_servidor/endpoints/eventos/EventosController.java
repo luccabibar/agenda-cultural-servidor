@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
+import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.StatusEvento;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
@@ -289,6 +290,50 @@ public class EventosController
         ResponseWrapper<Boolean> response = ResponseWrapper.of(result);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/{id}/analise")
+    public ResponseEntity<ResponseWrapper<Boolean>> analisaEvento(
+        @PathVariable int id,
+        @Valid @RequestBody PostAnaliseRequestBody body,
+        @RequestHeader(name = "Authorization") String authHeader
+    ) {
+        // pega dados do body
+        String status = body.status();
+
+        //pega user
+        Optional<JWTUser> userJWT = JWTMan.fullDecryptFromHeader(authHeader);
+        
+        if (userJWT.isEmpty())
+            return ResponseEntity.status(401).build();
+
+        UsuarioInterface usuario = UsuarioInterface.of(userJWT.get()).get();
+
+        if(usuario.tipoUsuario() != TipoUsuario.MODERADOR)
+            return ResponseEntity.status(403).build(); 
+
+
+        boolean result;
+        result = true;
+        
+        try{
+            result = eventosService.analisaEvento(id, usuario, status);
+        }
+        catch(IllegalArgumentException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
+        catch(ResourceNotFoundException ex){
+            System.err.println(ex);
+            return ResponseEntity.notFound().build();               
+        }        
+        catch(ForbiddenAccessException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(403).build();
+        }
+    
+        ResponseWrapper<Boolean> response = ResponseWrapper.of(result);
+        return ResponseEntity.ok(response);
+    }
 }
 
 
@@ -315,4 +360,9 @@ record PatchEventoRequestBody (
     String horaFim, 
     String regiao,
     String endereco
+) { }
+
+
+record PostAnaliseRequestBody (
+    @NotBlank String status 
 ) { }

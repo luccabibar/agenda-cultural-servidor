@@ -350,4 +350,36 @@ public class EventosService
 
         return res;
     }
+
+
+    public boolean analisaEvento(Integer idEvento, UsuarioInterface moderador, String statusStr) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException
+    {
+        StatusEvento status; 
+
+        try {
+            status = StatusEvento.valueOf(statusStr);
+        }
+        catch(Exception ex){            
+            System.err.println("EventosService: String status invlálida " + statusStr);
+            throw new IllegalArgumentException(ex.toString());
+        }
+        
+        if(!status.equals(StatusEvento.APROVADO) && !status.equals(StatusEvento.REPROVADO))
+            throw new IllegalArgumentException("EventosService: Status deve ser APROVADO ou REPROVADO");
+
+        Optional<Evento> evento = getEvento(idEvento);
+
+        if(evento.isEmpty())
+            throw new ResourceNotFoundException("EventosService: impossivel encontrar evento (id: " + idEvento + ")" );
+
+        if(evento.get().moderador().id() != moderador.id())
+            throw new ForbiddenAccessException("EventosService: usuario nao tem acesso a esse recurso");
+
+        System.out.println(evento.get());
+
+
+        boolean res = eventosRepository.atualizaStatusEvento(idEvento, moderador.id(), status);
+
+        return res;
+    }
 }
