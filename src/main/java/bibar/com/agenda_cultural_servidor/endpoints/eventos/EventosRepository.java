@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.AtualizacaoEvento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.StatusEvento;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Moderador;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Organizador;
 
 @Repository
@@ -291,15 +292,25 @@ public class EventosRepository
             SELECT
                 ev.nome, ev.id, ev.status, ev.descricao, ev.categoria, ev.contato,
                 ev.hora_ini, ev.hora_fim, ev.regiao, ev.endereco, ev.endereco_link,
-                og.id AS og_id, us.nome AS og_nome,
+                og.id AS og_id, us_og.nome AS og_nome,
+                md.id AS md_id, us_md.nome AS md_nome,
                 att.titulo AS att_titulo, att.texto AS att_texto
             FROM evento AS ev
+
             JOIN organizador AS og
             ON
                 ev.organizador = og.id
-            JOIN usuario AS us
+            JOIN usuario AS us_og
             ON
-                og.id = us.id
+                og.id = us_og.id
+                
+            JOIN moderador AS md
+            ON
+                ev.moderador = md.id
+            JOIN usuario AS us_md
+            ON
+                md.id = us_md.id
+                
             LEFT JOIN atualizacao_evento AS att
             ON
                 ev.id = att.evento
@@ -326,6 +337,13 @@ public class EventosRepository
             (Integer) resRow.get("og_id"),
             null,
             (String) resRow.get("og_nome"),
+            null            
+        );
+
+        Moderador moderador = new Moderador(
+            (Integer) resRow.get("md_id"),
+            null,
+            (String) resRow.get("md_nome"),
             null            
         );
 
@@ -358,7 +376,7 @@ public class EventosRepository
             (String) resRow.get("contato"),
             
             organizador,
-            null,
+            moderador,
 
             ((Timestamp) resRow.get("hora_ini")).toLocalDateTime(),
             ((Timestamp) resRow.get("hora_fim")).toLocalDateTime(),
@@ -652,6 +670,29 @@ public class EventosRepository
             res = 0;
         }
         
+        return res == 1;
+    }
+
+
+    public boolean atualizaStatusEvento(Integer idEvento, Integer idModerador, StatusEvento status)
+    {
+        String query = """
+            UPDATE evento
+            SET status = :status
+            WHERE
+                id = :id
+                AND moderador = :moderador
+                AND status = 'EmAnalise'
+            ;
+        """;
+
+        int res = jdbcClient
+            .sql(query)
+            .param("id", idEvento)
+            .param("moderador", idModerador)
+            .param("status", status.valor)
+            .update();
+
         return res == 1;
     }
 }
