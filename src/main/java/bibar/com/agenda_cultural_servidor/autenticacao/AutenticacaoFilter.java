@@ -29,6 +29,8 @@ public class AutenticacaoFilter extends OncePerRequestFilter
         // TODO: essa lista deve ficar aqui??
         doNotFilter = Arrays.asList(
             EndpointMatch.of("GET","\\/ping(?:\\/[\\w\\d]+)*"), // match util: (?:\\/[\\w\\d]+)* = "/qualquer_coisa" 0 ou mais vezes
+            EndpointMatch.of("POST","\\/ping(?:\\/[\\w\\d]+)*"), // match util: (?:\\/[\\w\\d]+)* = "/qualquer_coisa" 0 ou mais vezes
+            EndpointMatch.of("GET","\\/recursos/img/[\\w\\d-_]+\\.[\\w\\d]+"), // recursos/img
             EndpointMatch.of("GET","\\/eventos"),
             EndpointMatch.of("GET","\\/eventos/filtros"),
             EndpointMatch.of("GET","\\/eventos/[\\d]+"),
