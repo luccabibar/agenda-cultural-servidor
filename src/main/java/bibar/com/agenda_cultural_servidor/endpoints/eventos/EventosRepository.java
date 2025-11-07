@@ -392,6 +392,30 @@ public class EventosRepository
     }
 
 
+    public Optional<String> getImagem(Integer id)
+    {
+        
+        String query = """
+            SELECT
+                ev.imagem
+            FROM
+                evento AS ev
+            WHERE
+                id = :id
+            ;
+        """;
+
+        Optional<Object> response =  jdbcClient
+            .sql(query)
+            .param("id", id)
+            .query()
+            .optionalValue();
+
+        // retorna resultado desejado OU optional vazio
+        return response.map(obj -> obj.toString());
+    }
+
+
     public boolean criaEvento(
         StatusEvento status,
         String nome,
@@ -403,7 +427,8 @@ public class EventosRepository
         LocalDateTime horaFim,
         String regiao,
         String endereco,
-        String enderecoLink
+        String enderecoLink,
+        String imagemCaminho
     ) {
         String query = """
             INSERT INTO evento (
@@ -417,7 +442,8 @@ public class EventosRepository
                 hora_fim,
                 regiao,
                 endereco,
-                endereco_link
+                endereco_link,
+                imagem
             )
             VALUES (
                 :status,
@@ -430,7 +456,8 @@ public class EventosRepository
                 :hora_fim,
                 :regiao,
                 :endereco,
-                :endereco_link
+                :endereco_link,
+                :imagem
             );
         """;
 
@@ -447,6 +474,7 @@ public class EventosRepository
             .param("regiao", regiao)
             .param("endereco", endereco)
             .param("endereco_link", enderecoLink)
+            .param("imagem", imagemCaminho)
             .update();
 
         return res == 1;

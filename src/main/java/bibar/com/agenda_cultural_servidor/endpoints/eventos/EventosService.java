@@ -1,5 +1,6 @@
 package bibar.com.agenda_cultural_servidor.endpoints.eventos;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
@@ -17,17 +19,22 @@ import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.StatusEvento
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
+import bibar.com.agenda_cultural_servidor.records.ArquivoTipo;
+import bibar.com.agenda_cultural_servidor.utils.ArmazenamentoManager;
 
 @Service
 public class EventosService
 {
     private DateTimeFormatter dateFormatter, timeFormatter, dateTimeFormatter;
     private EventosRepository eventosRepository;
+    private ArmazenamentoManager armazenamentoManager;
 
     public EventosService (
-        EventosRepository eventosRepositoryInj
+        EventosRepository eventosRepositoryInj,
+        ArmazenamentoManager armazenamentoManagerInj
     ) {
         eventosRepository = eventosRepositoryInj;
+        armazenamentoManager = armazenamentoManagerInj;
 
         dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE;           // yyyy-MM-dd
         timeFormatter = DateTimeFormatter.ISO_LOCAL_TIME;           // HH:mm:ss
@@ -47,6 +54,11 @@ public class EventosService
     private boolean isHorasValid(LocalDateTime horaIni, LocalDateTime horaFim)
     {
         return horaFim != null && horaIni != null && horaIni.isBefore(horaFim) && LocalDateTime.now().isBefore(horaIni);
+    }
+
+    private boolean isImagemValid(MultipartFile imagem)
+    {
+        return imagem != null && !imagem.isEmpty() && !imagem.getContentType().matches("image\\/(?:png|jpg|jpeg)");
     }
 
     private boolean isTituloAttValid(String titulo) { return titulo != null && titulo.length() <= 24; }
@@ -146,8 +158,9 @@ public class EventosService
         String horaIniStr,
         String horaFimStr,
         String regiao,
-        String endereco
-    ) throws IllegalArgumentException 
+        String endereco,
+        MultipartFile imagem
+    ) throws IllegalArgumentException, IOException
     {
         // valida dados, realzia conversoes necessarias
         // TODO: endereco -> google maps link
@@ -170,10 +183,17 @@ public class EventosService
             || !isRegiaoEventoValid(regiao)
             || !isEnderecoEventoValid(endereco)
             || !isHorasValid(horaIni, horaFim)
+            || !isImagemValid(imagem)
         )
             throw new IllegalArgumentException("EventosService: um dos parametros enviados é considerado invalido");
             
+        // tenta salvar imagem
+        Optional<String> caminhoImagem = armazenamentoManager.armazenaImagem(imagem);
 
+        if(caminhoImagem.isEmpty())
+            throw new IOException("EventosService: não foi possível salvar a imagem");
+
+        // tenta salvar evento
         boolean res = eventosRepository.criaEvento(
             StatusEvento.APROVADO,
             nome,
@@ -185,7 +205,8 @@ public class EventosService
             horaFim,
             regiao,
             endereco,
-            "\"null\"" // link endereco
+            "\"null\"", // link endereco,
+            caminhoImagem.get()
         );
 
         if(!res)
@@ -195,7 +216,7 @@ public class EventosService
         List<Evento> eventos = buscar(
             nome, 
             categoria, 
-            horaIni.format(dateFormatter), // busca <= data && busca >= data 
+            horaIni.format(dateFormatter), // busca <= data && busca >= data => busca == data
             horaIni.format(dateFormatter), 
             horaIni.format(timeFormatter), 
             horaIni.format(timeFormatter), 
@@ -309,6 +330,19 @@ public class EventosService
         boolean res = eventosRepository.deleteEvento(idEvento, organizador.id());
 
         return res;
+    }
+
+
+    public Optional<ArquivoTipo> getEventoImage(Integer idEvento)
+    {
+        Optional<String> caminhoImagem = eventosRepository.getImagem(idEvento);
+
+        if(caminhoImagem.isEmpty())
+            return Optional.empty();
+
+        Optional<ArquivoTipo> response = armazenamentoManager.getImagem(caminhoImagem.get());
+
+        return response;
     }
 
 

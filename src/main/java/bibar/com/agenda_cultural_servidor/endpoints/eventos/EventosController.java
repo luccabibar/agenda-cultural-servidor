@@ -1,5 +1,6 @@
 package bibar.com.agenda_cultural_servidor.endpoints.eventos;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,12 +15,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
+import bibar.com.agenda_cultural_servidor.records.ArquivoTipo;
 import bibar.com.agenda_cultural_servidor.records.JWTUser;
 import bibar.com.agenda_cultural_servidor.records.ResponseWrapper;
 import bibar.com.agenda_cultural_servidor.records.TipoUsuario;
@@ -76,18 +79,18 @@ public class EventosController
 
     @PostMapping
     public ResponseEntity<ResponseWrapper<Integer>> criaEvento(
-        @Valid @RequestBody PostEventoRequestBody body,
+        // este request deve receber dados por meio de @RequestParam porque utiliza o encoding multipart/form-data 
+        @RequestParam(required = true) String nome, 
+        @RequestParam(required = true) String descricao, 
+        @RequestParam(required = true) String categoria, 
+        @RequestParam(required = true) String contato, 
+        @RequestParam(required = true) String horaIni, 
+        @RequestParam(required = true) String horaFim, 
+        @RequestParam(required = true) String regiao,
+        @RequestParam(required = true) String endereco,
+        @RequestParam(required = true) MultipartFile imagem,
         @RequestHeader(name = "Authorization") String authHeader
     ) {
-        String nome = body.nome();
-        String descricao = body.descricao();
-        String categoria = body.categoria();
-        String contato = body.contato();
-        String horaIni = body.horaIni();
-        String horaFim = body.horaFim();
-        String regiao = body.regiao();
-        String endereco = body.endereco();
-
         // pega user
         Optional<JWTUser> userJWT = JWTMan.fullDecryptFromHeader(authHeader);
         
@@ -112,11 +115,17 @@ public class EventosController
                 horaIni,
                 horaFim,
                 regiao,
-                endereco
+                endereco,
+                imagem
             );
         }
         catch(IllegalArgumentException ex){
             System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
+        catch(IOException ex){
+            System.err.println(ex);
+            // TODO: Mensagem de erro mais clara
             return ResponseEntity.status(409).build();
         }
         
@@ -243,6 +252,22 @@ public class EventosController
             return ResponseEntity.ok(response);
         else
             return ResponseEntity.status(409).body(response);
+    }
+
+
+    @GetMapping("/{id}/imagem")
+    public ResponseEntity<byte[]> getEventoOImagem(
+        @PathVariable int id
+    ) {
+        Optional<ArquivoTipo> result = eventosService.getEventoImage(id);
+
+        if(result.isPresent())
+            return ResponseEntity.ok()
+                .contentType(result.get().tipo())
+                .body(result.get().arquivo());
+        else
+            return ResponseEntity.notFound().build();
+        
     }
 
 
