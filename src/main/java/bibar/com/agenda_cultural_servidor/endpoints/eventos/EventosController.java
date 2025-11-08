@@ -168,18 +168,15 @@ public class EventosController
     @PatchMapping("/{id}")
     public ResponseEntity<ResponseWrapper<Boolean>> editaEvento(
         @PathVariable int id,
-        @Valid @RequestBody PatchEventoRequestBody body,
+        @RequestParam(required = false) String descricao,
+        @RequestParam(required = false) String contato,
+        @RequestParam(required = false) String horaIni,
+        @RequestParam(required = false) String horaFim,
+        @RequestParam(required = false) String regiao,
+        @RequestParam(required = false) String endereco,
+        @RequestParam(required = false) MultipartFile imagem,
         @RequestHeader(name = "Authorization") String authHeader
     ) {
-        // pega dados do body
-        String descricao = body.descricao();
-        String contato = body.contato();
-        String horaIni = body.horaIni();
-        String horaFim = body.horaFim();
-        String regiao = body.regiao();
-        String endereco = body.endereco();
-
-
         //pega user
         Optional<JWTUser> userJWT = JWTMan.fullDecryptFromHeader(authHeader);
         
@@ -195,10 +192,15 @@ public class EventosController
         boolean result;
         
         try{
-            result = eventosService.editaEvento(id, usuario, descricao, contato, horaIni, horaFim, regiao, endereco);
+            result = eventosService.editaEvento(id, usuario, descricao, contato, horaIni, horaFim, regiao, endereco, imagem);
         }
         catch(IllegalArgumentException ex){
             System.err.println(ex);
+            return ResponseEntity.status(409).build();
+        }
+        catch(IOException ex){
+            System.err.println(ex);
+            // TODO: Mensagem de erro mais clara
             return ResponseEntity.status(409).build();
         }
         catch(ResourceNotFoundException ex){

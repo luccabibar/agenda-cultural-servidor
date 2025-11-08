@@ -494,7 +494,8 @@ public class EventosRepository
             Optional<LocalDateTime> horaIni,
             Optional<LocalDateTime> horaFim,
             Optional<String> regiao,
-            Optional<String> endereco
+            Optional<String> endereco,
+            Optional<String> caminhoImg
     ) {        
         String query = """
             UPDATE evento 
@@ -515,7 +516,8 @@ public class EventosRepository
             horaIni,
             horaFim,
             regiao,
-            endereco
+            endereco,
+            caminhoImg
         );
 
         
@@ -598,7 +600,8 @@ public class EventosRepository
         Optional<LocalDateTime> horaIni,
         Optional<LocalDateTime> horaFim,
         Optional<String> regiao,
-        Optional<String> endereco
+        Optional<String> endereco,
+        Optional<String> caminhoImg
     ) {
         List<Declaracao> params = new ArrayList<Declaracao>();
         
@@ -657,6 +660,12 @@ public class EventosRepository
                 "endereco = :endereco"
             ));
         
+        if(caminhoImg.isPresent())
+            params.add(new Declaracao(
+                caminhoImg.get(), 
+                "imagem",
+                "imagem = :imagem"
+            ));
 
         return params;
     }

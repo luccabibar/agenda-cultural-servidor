@@ -254,8 +254,9 @@ public class EventosService
         String horaIniStr,
         String horaFimStr,
         String regiao,
-        String endereco
-    ) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException 
+        String endereco,
+        MultipartFile imagem
+    ) throws IllegalArgumentException, ResourceNotFoundException, ForbiddenAccessException, IOException 
     {
         // busca evento que vai ser editado
         Optional<Evento> evento = getEvento(idEvento);
@@ -303,10 +304,28 @@ public class EventosService
             || (contato != null && !isContatoEventoValid(contato))
             || (regiao != null && !isRegiaoEventoValid(regiao))
             || (endereco != null && !isEnderecoEventoValid(endereco))
+            || (imagem != null && !isImagemValid(imagem))
             || !horasValida
         )
             throw new IllegalArgumentException("EventosService: um dos parametros enviados é considerado invalido");
-            
+        
+        System.out.println(imagem);
+        System.out.println(imagem != null ? imagem.getOriginalFilename() : "brocou");
+
+        // tenta salvar imagem
+        Optional<String> caminhoImagem;
+        
+        if(imagem != null){
+            caminhoImagem = armazenamentoManager.armazenaImagem(imagem);
+
+            if(caminhoImagem.isEmpty())
+                throw new IOException("EventosService: não foi possível salvar a imagem");
+        }
+        else{
+            caminhoImagem = Optional.empty();
+        }
+
+
 
         boolean res = eventosRepository.patchEvento(
             idEvento,
@@ -317,7 +336,8 @@ public class EventosService
             Optional.ofNullable(horaIni),
             Optional.ofNullable(horaFim),
             Optional.ofNullable(regiao),
-            Optional.ofNullable(endereco)
+            Optional.ofNullable(endereco),
+            caminhoImagem
         );
 
         return res;
