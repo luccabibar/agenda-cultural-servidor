@@ -154,6 +154,7 @@ public class EventosService
     }
 
 
+    // TODO: definir status para em analise ao criar
     public int criaEvento(
         UsuarioInterface usuario,
         String nome,
@@ -246,6 +247,7 @@ public class EventosService
 
 
     // TODO: evitar de editar se todos os dados forem vazios / iguais
+    // TODO: mudar status para em analise ao editar
     public boolean editaEvento(
         int idEvento,
         UsuarioInterface organizador,
