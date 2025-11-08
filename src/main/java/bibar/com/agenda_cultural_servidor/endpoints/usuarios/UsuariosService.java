@@ -123,6 +123,15 @@ public class UsuariosService
     }
 
 
+    public Optional<Moderador> designarModerador()
+    {
+        // deve designar um moderador a um evento
+        Optional<Moderador> res = usuariosRepository.getModeradorAleatorio();
+
+        return res;
+    }
+
+
     public boolean criaPessoa(
         String nome,
         String email,

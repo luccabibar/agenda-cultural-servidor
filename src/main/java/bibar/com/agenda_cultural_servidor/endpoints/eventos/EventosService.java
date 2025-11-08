@@ -16,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.Evento;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.FiltrosBusca;
 import bibar.com.agenda_cultural_servidor.endpoints.eventos.records.StatusEvento;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.UsuariosService;
+import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.Moderador;
 import bibar.com.agenda_cultural_servidor.endpoints.usuarios.records.UsuarioInterface;
 import bibar.com.agenda_cultural_servidor.excessoes.ForbiddenAccessException;
 import bibar.com.agenda_cultural_servidor.excessoes.ResourceNotFoundException;
@@ -28,13 +30,16 @@ public class EventosService
     private DateTimeFormatter dateFormatter, timeFormatter, dateTimeFormatter;
     private EventosRepository eventosRepository;
     private ArmazenamentoManager armazenamentoManager;
+    private UsuariosService usuariosService;
 
     public EventosService (
         EventosRepository eventosRepositoryInj,
-        ArmazenamentoManager armazenamentoManagerInj
+        ArmazenamentoManager armazenamentoManagerInj,
+        UsuariosService usuariosServiceInj
     ) {
         eventosRepository = eventosRepositoryInj;
         armazenamentoManager = armazenamentoManagerInj;
+        usuariosService = usuariosServiceInj;
 
         dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE;           // yyyy-MM-dd
         timeFormatter = DateTimeFormatter.ISO_LOCAL_TIME;           // HH:mm:ss
@@ -58,7 +63,7 @@ public class EventosService
 
     private boolean isImagemValid(MultipartFile imagem)
     {
-        return imagem != null && !imagem.isEmpty() && !imagem.getContentType().matches("image\\/(?:png|jpg|jpeg)");
+        return imagem != null && !imagem.isEmpty() && imagem.getContentType().matches("image\\/(?:png|jpeg)");
     }
 
     private boolean isTituloAttValid(String titulo) { return titulo != null && titulo.length() <= 24; }
@@ -160,7 +165,7 @@ public class EventosService
         String regiao,
         String endereco,
         MultipartFile imagem
-    ) throws IllegalArgumentException, IOException
+    ) throws IllegalArgumentException, ResourceNotFoundException, IOException
     {
         // valida dados, realzia conversoes necessarias
         // TODO: endereco -> google maps link
@@ -193,6 +198,12 @@ public class EventosService
         if(caminhoImagem.isEmpty())
             throw new IOException("EventosService: não foi possível salvar a imagem");
 
+        // designa um moderador aleatorio para este evento
+        Optional<Moderador> moderador = usuariosService.designarModerador();
+
+        if(moderador.isEmpty())
+            throw new ResourceNotFoundException("Impossivel designar moderador à este evento");
+
         // tenta salvar evento
         boolean res = eventosRepository.criaEvento(
             StatusEvento.APROVADO,
@@ -201,6 +212,7 @@ public class EventosService
             categoria,
             contato,
             usuario.id(),
+            moderador.get().id(),
             horaIni,
             horaFim,
             regiao,

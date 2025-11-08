@@ -123,6 +123,10 @@ public class EventosController
             System.err.println(ex);
             return ResponseEntity.status(409).build();
         }
+        catch(ResourceNotFoundException ex){
+            System.err.println(ex);
+            return ResponseEntity.status(500).build();
+        }
         catch(IOException ex){
             System.err.println(ex);
             // TODO: Mensagem de erro mais clara

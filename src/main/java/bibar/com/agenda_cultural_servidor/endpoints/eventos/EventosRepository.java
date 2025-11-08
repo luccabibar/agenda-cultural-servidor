@@ -423,6 +423,7 @@ public class EventosRepository
         String categoria,
         String contato,
         int idOrganizador,
+        int idModerador,
         LocalDateTime horaIni,
         LocalDateTime horaFim,
         String regiao,
@@ -438,6 +439,7 @@ public class EventosRepository
                 categoria,
                 contato,
                 organizador,
+                moderador,
                 hora_ini,
                 hora_fim,
                 regiao,
@@ -452,6 +454,7 @@ public class EventosRepository
                 :categoria,
                 :contato,
                 :organizador,
+                :moderador,
                 :hora_ini,
                 :hora_fim,
                 :regiao,
@@ -469,6 +472,7 @@ public class EventosRepository
             .param("categoria", categoria)
             .param("contato", contato)
             .param("organizador", idOrganizador)
+            .param("moderador", idModerador)
             .param("hora_ini", horaIni)
             .param("hora_fim", horaFim)
             .param("regiao", regiao)

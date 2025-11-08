@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.InvalidMediaTypeException;
@@ -41,6 +40,20 @@ public class ArmazenamentoManager
 	}
 
 
+    public String gerarNomeArquivo(Integer tam)
+    {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        String result = "";
+
+        for(Integer ii = 0; ii != tam; ii++){
+            Integer randomNum = (int) Math.floor(Math.random() * chars.length()); 
+            result += chars.charAt(randomNum);
+        }
+
+        return result;
+    }
+
+
     public Optional<String> armazenaImagem(MultipartFile imagem) throws IllegalArgumentException
     {
         Path destino = recursosImg;
@@ -48,7 +61,7 @@ public class ArmazenamentoManager
 
         try {
             // define nome
-            String nomeImagem = UUID.randomUUID().toString();
+            String nomeImagem = gerarNomeArquivo(24);
             String contentType = imagem.getContentType();
 
             // verifica se o mimetype nao ta zoado

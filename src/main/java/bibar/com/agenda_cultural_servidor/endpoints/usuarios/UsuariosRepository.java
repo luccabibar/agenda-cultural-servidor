@@ -166,6 +166,34 @@ public class UsuariosRepository
     }
 
 
+    public Optional<Moderador> getModeradorAleatorio()
+    {
+        String query = """
+            SELECT
+                md.id AS id,
+                us.nome AS nome,
+                us.email AS email,
+                md.cpf_cnpj AS cpf,
+                (SELECT 'MODERADOR') AS tipoUsuario
+            FROM
+                moderador AS md
+            JOIN 
+                usuario AS us
+                ON us.id = md.id
+            ORDER BY RANDOM()
+            LIMIT 1
+            ;
+        """;
+
+        Optional<Moderador> response =  jdbcClient
+            .sql(query)
+            .query(Moderador.class)
+            .optional();
+
+        return response;
+    }
+
+
     public Optional<UsuarioInterface> autenticaUsuario(String email, String senha)
     {
         String query = """
