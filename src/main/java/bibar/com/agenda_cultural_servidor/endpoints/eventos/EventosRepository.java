@@ -523,15 +523,11 @@ public class EventosRepository
         
         // monta set clause
         String setClause = """
-            SET 
+            SET status = 'EmAnalise'
         """;
         
-        for(int ii = 0; ii < params.size(); ii++){
-            if(ii == 0)
-                setClause += params.get(ii).declaracao() + " ";
-            else
-                setClause += ", " + params.get(ii).declaracao() + " ";
-        }
+        for(int ii = 0; ii < params.size(); ii++)
+            setClause += ", " + params.get(ii).declaracao() + " ";
 
         // transforma o objeto estruturado em pares K V (conforme especificado pelo jdbc)
         Map<String, Object> paramMap = params

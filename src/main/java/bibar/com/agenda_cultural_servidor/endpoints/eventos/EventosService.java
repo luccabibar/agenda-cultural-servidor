@@ -207,7 +207,7 @@ public class EventosService
 
         // tenta salvar evento
         boolean res = eventosRepository.criaEvento(
-            StatusEvento.APROVADO,
+            StatusEvento.EMANALISE,
             nome,
             descricao,
             categoria,
